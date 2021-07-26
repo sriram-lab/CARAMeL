@@ -1,0 +1,415 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Confusion matrix</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-07-08"><meta name="DC.source" content="demo.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Confusion matrix</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#2">Proof</a></li><li><a href="#3">Multiclass demo</a></li><li><a href="#4">Two Class  demo</a></li><li><a href="#5">Get Calculation using confusion matrix</a></li></ul></div><div><ul><li>Developer Er.Abbas Manthiri S</li><li>Date  25-12-2016</li><li>Mail Id: <a href="mailto:abbasmanthiribe@gmail.com">abbasmanthiribe@gmail.com</a></li><li>Reference</li><li><a href="http://www.dataschool.io/simple-guide-to-confusion-matrix-terminology/">Dataschool</a></li><li><a href="https://en.wikipedia.org/wiki/Confusion_matrix">Wikipedia</a></li></ul></div><pre class="codeinput">clc
+clear <span class="string">all</span>
+close <span class="string">all</span>
+warning <span class="string">off</span> <span class="string">all</span>
+rng(<span class="string">'default'</span>)
+</pre><h2>Proof<a name="2"></a></h2><pre class="codeinput">disp(<span class="string">'Running Proof....'</span>)
+n=100;m=4;
+actual=round(rand(1,n)*m);
+[c_matrixp,Result]= confusion.getMatrix(actual,actual);
+
+disp(<span class="string">'Getting Values'</span>)
+Accuracy=Result.Accuracy
+Error=Result.Error
+Sensitivity=Result.Sensitivity
+Specificity=Result.Specificity
+Precision=Result.Precision
+FalsePositiveRate=Result.FalsePositiveRate
+F1_score=Result.F1_score
+MatthewsCorrelationCoefficient=Result.MatthewsCorrelationCoefficient
+Kappa=Result.Kappa
+</pre><pre class="codeoutput">Running Proof....
+Class List in given sample
+     0
+     1
+     2
+     3
+     4
+
+Total Instance = 100
+class1==&gt;0
+class2==&gt;1
+class3==&gt;2
+class4==&gt;3
+class5==&gt;4
+Confusion Matrix
+                     predict_class1    predict_class2    predict_class3
+                     ______________    ______________    ______________
+    Actual_class1    10                 0                 0            
+    Actual_class2     0                25                 0            
+    Actual_class3     0                 0                21            
+    Actual_class4     0                 0                 0            
+    Actual_class5     0                 0                 0            
+
+                     predict_class4    predict_class5
+                     ______________    ______________
+    Actual_class1     0                 0            
+    Actual_class2     0                 0            
+    Actual_class3     0                 0            
+    Actual_class4    28                 0            
+    Actual_class5     0                16            
+Multi-Class Confusion Matrix Output
+                     TruePositive    FalsePositive    FalseNegative
+                     ____________    _____________    _____________
+    Actual_class1    10              0                0            
+    Actual_class2    25              0                0            
+    Actual_class3    21              0                0            
+    Actual_class4    28              0                0            
+    Actual_class5    16              0                0            
+
+                     TrueNegative
+                     ____________
+    Actual_class1    90          
+    Actual_class2    75          
+    Actual_class3    79          
+    Actual_class4    72          
+    Actual_class5    84          
+    AccuracyOfSingle    ErrorOfSingle    AccuracyInTotal    ErrorInTotal
+    ________________    _____________    _______________    ____________
+    1                   0                 0.1               0           
+    1                   0                0.25               0           
+    1                   0                0.21               0           
+    1                   0                0.28               0           
+    1                   0                0.16               0           
+
+    Sensitivity    Specificity    Precision    FalsePositiveRate    F1_score
+    ___________    ___________    _________    _________________    ________
+    1              1              1            0                    1       
+    1              1              1            0                    1       
+    1              1              1            0                    1       
+    1              1              1            0                    1       
+    1              1              1            0                    1       
+
+    MatthewsCorrelationCoefficient    Kappa    TruePositive    FalsePositive
+    ______________________________    _____    ____________    _____________
+    1                                  0.8     10              0            
+    1                                  0.5     25              0            
+    1                                 0.58     21              0            
+    1                                 0.44     28              0            
+    1                                 0.68     16              0            
+
+    FalseNegative    TrueNegative       Class    
+    _____________    ____________    ____________
+    0                90              'class1==&gt;0'
+    0                75              'class2==&gt;1'
+    0                79              'class3==&gt;2'
+    0                72              'class4==&gt;3'
+    0                84              'class5==&gt;4'
+Over all valuses
+                          Accuracy: 1
+                             Error: 0
+                       Sensitivity: 1
+                       Specificity: 1
+                         Precision: 1
+                 FalsePositiveRate: 0
+                          F1_score: 1
+    MatthewsCorrelationCoefficient: 1
+                             Kappa: 1
+Getting Values
+Accuracy =
+     1
+Error =
+     0
+Sensitivity =
+     1
+Specificity =
+     1
+Precision =
+     1
+FalsePositiveRate =
+     0
+F1_score =
+     1
+MatthewsCorrelationCoefficient =
+     1
+Kappa =
+     1
+</pre><h2>Multiclass demo<a name="3"></a></h2><pre class="codeinput">disp(<span class="string">'_____________Multiclass demo_______________'</span>)
+disp(<span class="string">'Runing Multiclass confusionmat'</span>)
+n=100;m=2;
+actual=round(rand(1,n)*m);
+predict=round(rand(1,n)*m);
+[c_matrix,Result,RefereceResult]= confusion.getMatrix(actual,predict);
+<span class="comment">%</span>
+<span class="comment">% %DIsplay off</span>
+<span class="comment">% % [c_matrix,Result,RefereceResult]= confusionmat(actual,predict,0)</span>
+</pre><pre class="codeoutput">_____________Multiclass demo_______________
+Runing Multiclass confusionmat
+Class List in given sample
+     0
+     1
+     2
+
+Total Instance = 100
+class1==&gt;0
+class2==&gt;1
+class3==&gt;2
+Confusion Matrix
+                     predict_class1    predict_class2    predict_class3
+                     ______________    ______________    ______________
+    Actual_class1    6                 20                 5            
+    Actual_class2    9                 23                13            
+    Actual_class3    9                 11                 4            
+Multi-Class Confusion Matrix Output
+                     TruePositive    FalsePositive    FalseNegative
+                     ____________    _____________    _____________
+    Actual_class1     6              18               25           
+    Actual_class2    23              31               22           
+    Actual_class3     4              18               20           
+
+                     TrueNegative
+                     ____________
+    Actual_class1    51          
+    Actual_class2    24          
+    Actual_class3    58          
+    AccuracyOfSingle    ErrorOfSingle    AccuracyInTotal    ErrorInTotal
+    ________________    _____________    _______________    ____________
+    0.19355             0.80645          0.06               0.18        
+    0.51111             0.48889          0.23               0.31        
+    0.16667             0.83333          0.04               0.18        
+
+    Sensitivity    Specificity    Precision    FalsePositiveRate    F1_score
+    ___________    ___________    _________    _________________    ________
+    0.19355        0.73913           0.25      0.26087              0.21818 
+    0.51111        0.43636        0.42593      0.56364              0.46465 
+    0.16667        0.76316        0.18182      0.23684              0.17391 
+
+    MatthewsCorrelationCoefficient     Kappa     TruePositive    FalsePositive
+    ______________________________    _______    ____________    _____________
+    0.072903                          0.57319     6              18           
+     0.05243                          0.34545    23              31           
+     0.07235                          0.63083     4              18           
+
+    FalseNegative    TrueNegative       Class    
+    _____________    ____________    ____________
+    25               51              'class1==&gt;0'
+    22               24              'class2==&gt;1'
+    20               58              'class3==&gt;2'
+Over all valuses
+                          Accuracy: 0.3300
+                             Error: 0.6700
+                       Sensitivity: 0.2904
+                       Specificity: 0.6462
+                         Precision: 0.2859
+                 FalsePositiveRate: 0.3538
+                          F1_score: 0.2856
+    MatthewsCorrelationCoefficient: 0.0659
+                             Kappa: 0.3367
+</pre><h2>Two Class  demo<a name="4"></a></h2><pre class="codeinput">disp(<span class="string">'____________Two Class  demo________________'</span>)
+disp(<span class="string">'Running Simple Confusionmat...'</span>)
+n=100;m=1;
+actual=round(rand(1,n)*m);
+predict=round(rand(1,n)*m);
+<span class="comment">% [c_matrix,Result]= confusionmat(actual,predict)</span>
+[c_matrix,Result]= confusion.getMatrix(actual,predict);
+</pre><pre class="codeoutput">____________Two Class  demo________________
+Running Simple Confusionmat...
+Class List in given sample
+     0
+     1
+
+Total Instance = 100
+class1==&gt;0
+class2==&gt;1
+Confusion Matrix
+                     predict_class1    predict_class2
+                     ______________    ______________
+    Actual_class1    26                28            
+    Actual_class2    24                22            
+Two-Class Confution Matrix
+    ''                   'TruePositive'    'FalsePositive'
+    'FalseNegative'      [          26]    [           28]
+    'TrueNegative=TN'    [          24]    [           22]
+Over all valuses
+                          Accuracy: 0.4800
+                             Error: 0.5200
+                       Sensitivity: 0.4815
+                       Specificity: 0.4783
+                         Precision: 0.5200
+                 FalsePositiveRate: 0.5217
+                          F1_score: 0.5000
+    MatthewsCorrelationCoefficient: 0.0401
+                             Kappa: 0.0385
+</pre><h2>Get Calculation using confusion matrix<a name="5"></a></h2><pre class="codeinput">disp(<span class="string">'____________Get Calculation using confusion matrix________________'</span>)
+n=5;
+c_matrix=randi([20,40],[n,n]);
+disp(<span class="string">'confusion matrix generated'</span>)
+disp(c_matrix)
+disp(<span class="string">'Running Calcualtion...'</span>)
+[Result,RefereceResult]=confusion.getValues(c_matrix);
+disp(Result)
+disp(RefereceResult)
+</pre><pre class="codeoutput">____________Get Calculation using confusion matrix________________
+confusion matrix generated
+    32    22    31    40    28
+    31    39    33    24    29
+    38    33    31    22    27
+    25    30    35    22    36
+    26    33    30    21    33
+Running Calcualtion...
+                          Accuracy: 0.2091
+                             Error: 0.7909
+                       Sensitivity: 0.2088
+                       Specificity: 0.8022
+                         Precision: 0.2078
+                 FalsePositiveRate: 0.1978
+                          F1_score: 0.2080
+    MatthewsCorrelationCoefficient: 0.0265
+                             Kappa: 0.5954
+                  AccuracyOfSingle: [5x1 double]
+                     ErrorOfSingle: [5x1 double]
+                   AccuracyInTotal: [5x1 double]
+                      ErrorInTotal: [5x1 double]
+                       Sensitivity: [5x1 double]
+                       Specificity: [5x1 double]
+                         Precision: [5x1 double]
+                 FalsePositiveRate: [5x1 double]
+                          F1_score: [5x1 double]
+    MatthewsCorrelationCoefficient: [5x1 double]
+                             Kappa: [5x1 double]
+                      TruePositive: [5x1 double]
+                     FalsePositive: [5x1 double]
+                     FalseNegative: [5x1 double]
+                      TrueNegative: [5x1 double]
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Confusion matrix
+%%
+%%
+% 
+% * Developer Er.Abbas Manthiri S 
+% * Date  25-12-2016
+% * Mail Id: abbasmanthiribe@gmail.com
+% * Reference
+% * <http://www.dataschool.io/simple-guide-to-confusion-matrix-terminology/ Dataschool>
+% * <https://en.wikipedia.org/wiki/Confusion_matrix Wikipedia>
+% 
+clc
+clear all
+close all
+warning off all
+rng('default')
+
+%% Proof
+disp('Running Proof....')
+n=100;m=4;
+actual=round(rand(1,n)*m);
+[c_matrixp,Result]= confusion.getMatrix(actual,actual);
+
+disp('Getting Values')
+Accuracy=Result.Accuracy
+Error=Result.Error
+Sensitivity=Result.Sensitivity
+Specificity=Result.Specificity
+Precision=Result.Precision
+FalsePositiveRate=Result.FalsePositiveRate
+F1_score=Result.F1_score
+MatthewsCorrelationCoefficient=Result.MatthewsCorrelationCoefficient
+Kappa=Result.Kappa
+
+
+
+
+%% Multiclass demo
+disp('_____________Multiclass demo_______________')
+disp('Runing Multiclass confusionmat')
+n=100;m=2;
+actual=round(rand(1,n)*m);
+predict=round(rand(1,n)*m);
+[c_matrix,Result,RefereceResult]= confusion.getMatrix(actual,predict);
+%
+% %DIsplay off
+% % [c_matrix,Result,RefereceResult]= confusionmat(actual,predict,0)
+
+%% Two Class  demo
+disp('____________Two Class  demo________________')
+disp('Running Simple Confusionmat...')
+n=100;m=1;
+actual=round(rand(1,n)*m);
+predict=round(rand(1,n)*m);
+% [c_matrix,Result]= confusionmat(actual,predict)
+[c_matrix,Result]= confusion.getMatrix(actual,predict);
+
+%% Get Calculation using confusion matrix
+disp('____________Get Calculation using confusion matrix________________')
+n=5;
+c_matrix=randi([20,40],[n,n]);
+disp('confusion matrix generated')
+disp(c_matrix)
+disp('Running Calcualtion...')
+[Result,RefereceResult]=confusion.getValues(c_matrix);
+disp(Result)
+disp(RefereceResult)
+
+
+
+##### SOURCE END #####
+--></body></html>

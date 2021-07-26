@@ -1,0 +1,414 @@
+---
+title: "GEM-ML results visualization"
+author: "Carolina H. Chung"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: 
+  html_notebook: 
+    code_folding: hide
+---
+
+This is an R Markdown Notebook that generates plots to visualize GEM-ML results. 
+
+# Set up environment
+
+Import and load required libraries.
+
+```{r install, include=F}
+
+# svDialogs (for popup user input)
+  install.packages('svDialogs')
+  library(svDialogs)
+
+# dplyr (for piping functions)
+  install.packages('dplyr')
+  library(dplyr)
+
+# readxl (for reading Excel files)
+  install.packages('readxl')
+  library(readxl)
+  
+# reshape2 (for reshaping data)
+  install.packages('reshape2')
+  library(reshape2)
+  
+# tidyr (for concatenating columns)
+  install.packages('tidyr')
+  library(tidyr)
+  
+# data.table (for copying data frame)
+  install.packages('data.table')
+  library(data.table)
+  
+# ggplot2 (for plotting purposes)
+  install.packages('ggplot2')
+  library(ggplot2)
+  
+# ggpubr (for publication ready plots)
+  install.packages('ggpubr')
+  library(ggpubr)
+  
+# heatmaply (for interactive heatmaps)
+  install.packages('heatmaply')
+  library(heatmaply)
+  
+# pheatmap (for pretty heatmaps)
+  # install.packages('pheatmap')
+  # library(pheatmap)
+  if (!require("devtools")) {
+    install.packages("devtools", dependencies = TRUE)
+    library(devtools)
+  }
+  install_github("raivokolde/pheatmap")
+  library(pheatmap)
+  
+# RColorBrewer (for custom color palettes)
+  install.packages('RColorBrewer')
+  library(RColorBrewer)
+  
+```
+
+# Load data 
+
+Load data to visualize. Specifically: 
+
+- *E. coli* interactions (2-way)
+- *E. coli* interactions (3-way)
+- *M. tb* interactions (2- and 3-way)
+- *M. tb* interactions (clinical)
+- *E. coli* sequential interactions (Immamovic)
+- *E. coli* sequential interactions (Oz)
+- *E. coli* sequential interactions (Suzuki)
+- *E. coli* drug-media interactions (MAGENTA)
+- *E. coli* drug-media interactions (Biolog)
+
+```{r load data}
+
+# Create variable to store all datasets
+  dataset <- list()
+
+# EC (2-way)
+  dataset$EC$pairs <- read_excel('data/plot_data.xlsx', sheet='Ecoli_pairwise')
+  
+# EC (3-way)
+  dataset$EC$trips <- read_excel('data/plot_data.xlsx', sheet='Ecoli_three_way')
+  
+# EC (Imamovic)
+  dataset$EC$ima <- read_excel('data/plot_data.xlsx', sheet='Ecoli_Imamovic')
+  
+# EC (Oz)
+  dataset$EC$oz <- read_excel('data/plot_data.xlsx', sheet='Ecoli_Oz')
+  
+# EC (Suzuki)
+  dataset$EC$suz <- read_excel('data/plot_data.xlsx', sheet='Ecoli_Suzuki')
+  
+# EC (Biolog)
+  dataset$EC$bio <- read_excel('data/plot_data.xlsx', sheet='Ecoli_Biolog_mat')
+  
+# EC (predictions)
+  dataset$EC$pred <- read_excel('data/plot_data.xlsx', sheet='Sheet10')
+  
+# Color palette
+  col <- c(brewer.pal(9, 'Set1'), brewer.pal(3, 'Accent'))
+
+```
+
+# Generate plots
+
+Visualize all *E. coli* and *M. tb* results.
+
+```{r E. coli interactions (pairwise), warning = F}
+
+# Re-organize data
+  dataset$EC$pairs$Drug_1 <- dataset$EC$pairs$Drug_1 %>% 
+    factor(., levels=unique(.))
+  dataset$EC$pairs$Drug_2 <- dataset$EC$pairs$Drug_2 %>% 
+    factor(., levels=unique(.))
+  x <- dcast(dataset$EC$pairs[, c(3:5)], Drug_1~Drug_2)
+  y <- x[, -1] %>% transpose(.)
+  colnames(y) <- colnames(x)[-1]
+  rownames(y) <- colnames(y) 
+  
+# Define metadata
+  g <- data.frame(Target=dataset$EC$pairs$Class_2[1:19] %>% 
+                    factor(., levels=unique(.)), 
+                  Subset=c(rep('train', 15), rep('test', 4)) %>% 
+                    factor(., levels=unique(.)))
+  rownames(g) <- rownames(y)
+  
+# Use RedBlue color palette (asymmetric)
+  col.neg <- colorRampPalette(colors=c("cornflowerblue", "white"), 
+                              space="Lab")(22)
+  col.pos <- colorRampPalette(colors=c("white", "red4"), 
+                              space="Lab")(78)
+  col.pal <- c(col.neg, col.pos)
+  
+# Define annotation colors
+  col.annot <- list(Subset=c(train='lightgoldenrod', test='green4'), 
+                    Target=col[c(1:5, 10, 7, 8, 9)])
+  names(col.annot$Target) <- levels(g$Target)
+
+# Visualize plot
+  pheatmap(y, cluster_rows=F, cluster_cols=F, gaps_row=15, 
+           legend_breaks=c(min(y, na.rm=T), -1, 0, 1, 2, 3, 4, max(y, na.rm=T)), 
+           legend_labels=c('Synergy','-1','0','1','2','3','4','Antagonism'), 
+           annotation_row=g, annotation_colors=col.annot, 
+           color=col.pal, na_col='white', border_color=F, 
+           angle_col='90', main='E. coli drug interactions (pairwise)',)
+
+```
+
+```{r E. coli interactions (3-way), warning = F}
+
+# Re-organize data
+  y <- matrix(dataset$EC$trips$Score, nrow=7, ncol=8, byrow=T)
+  z <- matrix(data=NA, nrow=7*8, ncol=8*8)
+  a <- unlist(t(dataset$EC$trips[, c(1:8)]))
+  z[1, ] <- c(a[, 1:8])
+  z[9, ] <- c(a[, 9:16])
+  z[17, ] <- c(a[, 17:24])
+  z[25, ] <- c(a[, 25:32])
+  z[33, ] <- c(a[, 33:40])
+  z[41, ] <- c(a[, 41:48])
+  z[49, ] <- c(a[, 49:56])
+  
+# Use RedBlue color palette (asymmetric)
+  col.neg <- colorRampPalette(colors=c("cornflowerblue", "white"), 
+                              space="Lab")(22)
+  col.pos <- colorRampPalette(colors=c("white", "red4"), 
+                              space="Lab")(78)
+  col.pal <- c(col.neg, col.pos)
+
+# Visualize plots
+  pheatmap(y, cluster_rows=F, cluster_cols=F,  
+           color=col.pal, main='E. coli drug interactions (three-way)', 
+           show_rownames=F, show_colnames=F)
+  col.pal <- colorRampPalette(colors=c("white", "black"), space="Lab")(2)
+  par(bg=NA)
+  pheatmap(z, cluster_rows=F, cluster_cols=F,  
+           color=col.pal, main='E. coli drug interactions (three-way)', 
+           border_color=F, show_rownames=F, show_colnames=F, 
+           na_col='transparent')
+
+```
+
+```{r E. coli interactions (Imamovic), warning = F}
+
+# Re-organize data
+  dataset$EC$ima$Drug_1 <- dataset$EC$ima$Drug_1 %>% 
+    factor(., levels=unique(.))
+  dataset$EC$ima$Drug_2 <- dataset$EC$ima$Drug_2 %>% 
+    factor(., levels=unique(.))
+  x <- dcast(dataset$EC$ima[, c(3:5)], Drug_1~Drug_2)
+  y <- x[, -1] 
+  colnames(y) <- colnames(x)[-1]
+  rownames(y) <- colnames(y) 
+  
+# Define metadata
+  g <- data.frame(Target=dataset$EC$ima$Class_2[1:17] %>% 
+                    factor(., levels=unique(.)))
+  rownames(g) <- rownames(y)
+  
+# Use RedBlue color palette (asymmetric)
+  col.neg <- colorRampPalette(colors=c("royalblue3", "white"), 
+                              space="Lab")(44)
+  col.pos <- colorRampPalette(colors=c("white", "red4"), 
+                              space="Lab")(56)
+  col.pal <- c(col.neg, col.pos)
+  
+# Define annotation colors
+  col.annot <- list(Target=col[c(1:7, 11, 9)])
+  names(col.annot$Target) <- levels(g$Target)
+
+# Visualize plot
+  pheatmap(y, cluster_rows=F, cluster_cols=F, 
+           legend_breaks=c(-4, -2, 0, 2, 4, max(y)), 
+           legend_labels=c('Sensitive','','Neutral','','','Resistant'), 
+           annotation_row=g, annotation_colors=col.annot, color=col.pal, 
+           angle_col='90', main='Sequential drug interactions (T = 10 days)')
+
+```
+
+```{r E. coli interactions (Oz), warning = F}
+
+# Re-organize data
+  dataset$EC$oz$Drug_1 <- dataset$EC$oz$Drug_1 %>% 
+    factor(., levels=unique(.))
+  dataset$EC$oz$Drug_2 <- dataset$EC$oz$Drug_2 %>% 
+    factor(., levels=unique(.))
+  x <- dcast(dataset$EC$oz[, c(3:5)], Drug_1~Drug_2)
+  y <- x[, -1] 
+  y[y > 1] <- 1
+  colnames(y) <- colnames(x)[-1]
+  rownames(y) <- colnames(y) 
+  
+# Define metadata
+  g <- data.frame(Target=dataset$EC$oz$Class_2[1:17] %>% 
+                    factor(., levels=unique(.)))
+  rownames(g) <- rownames(y)
+  
+# Use RedBlue color palette (asymmetric)
+  col.neg <- colorRampPalette(colors=c("royalblue1", "white"), 
+                              space="Lab")(20)
+  col.pos <- colorRampPalette(colors=c("white", "red4"), 
+                              space="Lab")(80)
+  col.pal <- c(col.neg, col.pos)
+  
+# Define annotation colors
+  col.annot <- list(Target=col[c(1:5, 7)])
+  names(col.annot$Target) <- levels(g$Target)
+
+# Visualize plot
+  pheatmap(y, cluster_rows=F, cluster_cols=F, 
+           legend_breaks=c(-0.2, 0, 0.2, 0.4, 0.6, 0.8, 1), 
+           legend_labels=c('Sensitive','Neutral','','','','','Resistant'), 
+           annotation_row=g, annotation_colors=col.annot, color=col.pal, 
+           angle_col='90', main='Sequential drug interactions (T = 21 days)')
+
+```
+
+```{r E. coli interactions (Suzuki), warning = F}
+
+# Re-organize data
+  dataset$EC$suz$Drug_1 <- dataset$EC$suz$Drug_1 %>% 
+    factor(., levels=unique(.))
+  dataset$EC$suz$Drug_2 <- dataset$EC$suz$Drug_2 %>% 
+    factor(., levels=unique(.))
+  x <- dcast(dataset$EC$suz[, c(3:5)], Drug_1~Drug_2)
+  y <- x[, -1] 
+  colnames(y) <- colnames(x)[-1]
+  rownames(y) <- x$Drug_1
+  
+# Define metadata
+  gx <- data.frame(Target_1=dataset$EC$suz$Class_2[c(1, 2, 7, 8, 9, 14)] %>% 
+                    factor(., levels=unique(.)))
+  rownames(gx) <- colnames(y)[c(1, 2, 7, 8, 9, 14)]
+  gy <- data.frame(Target_2=dataset$EC$suz$Class_2[1:15] %>% 
+                    factor(., levels=unique(.)))
+  rownames(gy) <- colnames(y)
+  
+# Use RedBlue color palette (asymmetric)
+  col.neg <- colorRampPalette(colors=c("royalblue1", "white"), 
+                              space="Lab")(39)
+  col.pos <- colorRampPalette(colors=c("white", "red4"), 
+                              space="Lab")(61)
+  col.pal <- c(col.neg, col.pos)
+  
+# Define annotation colors
+  col.annot <- list(Target_1=col[c(1:3, 5)], 
+                    Target_2=col[c(1:5, 9)])
+  names(col.annot$Target_1) <- levels(gx$Target)
+  names(col.annot$Target_2) <- levels(gy$Target)
+
+# Visualize plot
+  pheatmap(y, cluster_rows=F, cluster_cols=F, 
+           legend_breaks=c(-2, -1, 0, 1, 2, max(y)), 
+           legend_labels=c('Sensitive','','Neutral','','','Resitant'), 
+           annotation_row=gx, annotation_col=gy, annotation_colors=col.annot, 
+           color=col.pal, cellheitht=26, angle_col='90', 
+           main='Sequential drug interactions (T = 90 days)')
+
+```
+
+```{r E. coli interactions (Biolog), warning = F}
+
+# Re-organize data
+  dataset$EC$bio$Media <- dataset$EC$bio$Media %>% 
+    factor(., levels=unique(.))
+  y <- dataset$EC$bio[, -c(1:2)]
+  rownames(y) <- dataset$EC$bio$Media
+  
+# Define metadata
+  gx <- data.frame(Plate=c(rep('PM01', 96), rep('PM05', 96)) %>% 
+                    factor(., levels=unique(.)), 
+                   Simulated=dataset$EC$bio$Simulatable %>% 
+                     factor(., levels=unique(.)))
+  rownames(gx) <- rownames(y)
+  gy <- data.frame(Subset=c(rep('train', 4), rep('test', 2)) %>% 
+                    factor(., levels=unique(.)), 
+                   Target=c(rep('Cell wall', 2), 
+                            rep('Protein synthesis, 30S', 2), 
+                            rep('Multiple mechanisms', 2)) %>% 
+                    factor(., levels=unique(.)))
+  rownames(gy) <- colnames(y)
+  
+# Use RedBlue color palette (asymmetric)
+  col.pal <- colorRampPalette(colors=c("snow2", "orchid3"),space="Lab")(100)
+  
+# Define annotation colors
+  col.annot <- list(Plate=c(PM01='steelblue1', PM05='coral'), 
+                    Simulated=c(Yes='limegreen', No='gray'), 
+                    Subset=c(train='lightgoldenrod', test='green4'), 
+                    Target=c(`Cell wall`='darkorange', 
+                             `Protein synthesis, 30S`='turquoise3',
+                             `Multiple mechanisms`='sienna'))
+  names(col.annot$Plate) <- levels(gx$Plate)
+  names(col.annot$Simulated) <- levels(gx$Simulated)
+  names(col.annot$Subset) <- levels(gy$Subset)
+  names(col.annot$Target) <- levels(gy$Target)
+  gz <- data.frame(Target=gy$Target)
+  rownames(gz) <- rownames(gy)
+  gy1 <- data.frame(Simulated=gx$Simulated[1:96])
+  rownames(gy1) <- rownames(gx)[1:96]
+
+# Visualize plot
+  pheatmap(y, cluster_rows=F, cluster_cols=F, gaps_col=4, gaps_row=96, 
+           legend_breaks=c(min(y), 0.5, 1, 1.5, max(y)-0.05), border_color=T, 
+           legend_labels=c('0','0.5','1','1.5','Respiration'), 
+           annotation_row=gx, annotation_col=gy, annotation_colors=col.annot, 
+           color=col.pal, angle_col='90', show_rownames=F, cellheight=1.2,  
+           cellwidth=15, main='Drug-media interactions')
+  
+  pheatmap(t(y), cluster_rows=F, cluster_cols=F, gaps_row=4, gaps_col=192,
+           legend_breaks=c(min(y), 0.5, 1, 1.5, max(y)-0.05), border_color=T,
+           legend_labels=c('0','0.5','1','1.5','Respiration'),
+           annotation_row=gz, annotation_col=gx, annotation_colors=col.annot,
+           color=col.pal, angle_col='90', show_colnames=F, cellheight=15,
+           cellwidth=1.2, main='Drug-media interactions')
+  
+  pheatmap(t(y[1:96,]), cluster_rows=F, cluster_cols=F, gaps_row=4, gaps_col=96,
+           legend_breaks=c(min(y[1:96,]), 0.5, 1, 1.5, max(y)-0.05), 
+           legend_labels=c('0','0.5','1','1.5','Respiration'), border_color=T,
+           annotation_row=gz, annotation_col=gy1, annotation_colors=col.annot,
+           color=col.pal, angle_col='90', show_colnames=F, cellheight=15,
+           cellwidth=2, main='Biolog interactions')
+
+```
+
+```{r E. coli predictions, warning = F}
+
+# Re-organize data
+  y <- dataset$EC$pred[, -1]
+  rownames(y) <- dataset$EC$pred$Pair
+  
+# Use RedBlue color palette (asymmetric)
+  n <- round(100*(max(y) - min(y)))
+  x <- n + round(100*min(y))
+  col.neg <- colorRampPalette(colors=c("royalblue3", "white"), 
+                              space="Lab")(abs(round(100*min(y))))
+  col.pos <- colorRampPalette(colors=c("white", "red4"), 
+                              space="Lab")(abs(round(100*max(y))))
+  col.pal <- c(col.neg, col.pos)
+
+# Visualize plot
+  pheatmap(y, cluster_rows=F, cluster_cols=F, gaps_col=c(55, 110),
+           clustering_distance_rows='manhattan', color=col.pal, 
+           legend_breaks=c(min(y)+0.03, 0, max(y)-0.03), border_color=NA, 
+           legend_labels=c('Synergy','Neutral','Antagonism'), 
+           show_rownames=F, show_colnames=F, cellheight=1.5, cellwidth=1.5)
+  
+  heatmaply(y, dist_method='none', dendrogram = 'none', 
+            labRow = dataset$EC$pred$Pair, showticklabels = c(F, F), 
+            plot_method = 'plotly', symm = F, grid_gap = 0,
+            colors = col.pal, colorbar_len = 0.4, 
+            colorbar_xpos = 0, colorbar_ypos = 0.5, 
+            main = 'CARDiG predictions')
+  
+# # Save plot?
+#   save.plot <- dlgInput("Save heatmap plot? (T/F)", Sys.info()['F'])$res
+#   if (save.plot) {
+#     orca(h, 'cardig_pred.pdf', width=920, height=800)
+#     h
+# }
+
+```
+
