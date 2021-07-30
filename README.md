@@ -21,7 +21,7 @@ git clone https://github.com/sriram-lab/CARAMeL.git
 # Repository structure
 The repository structure is outlined below. Of note, **folders** are designated in bold while *data/code files* are designated in italics. 
 - **code**: folder containing all relevant code files
-  - **CARAMeL_suite**: folder containing all code file solely created to implement the CARAMeL approach. Note: all files contain details on inputs, outputs, and function usage
+  - **CARAMeL_suite**: folder containing all code files solely created to implement the CARAMeL approach. Note: all files contain details on inputs, outputs, and function usage
     - *caramel.m*:                      main code script the develops a CARAMeL model
     - *caramel_anova.m*:                conducts a one-way ANOVA test to determine which GEM reactions have differential flux activity that distinguishes between synergistic vs. antagonistic drug interaction outcomes 
     - *caramel_assessPerf.m*:           assesses the predictive performance of a CARAMeL model
@@ -42,33 +42,33 @@ The repository structure is outlined below. Of note, **folders** are designated 
     - *process_flux.m*:                 processes simulated flux data into phenotypic data to be used for CARAMeL model construction
   - **misc**: folder containing miscellaneous code files
     - **File_Exchange**:                folder containing code available through MATLAB File Exchange. Direct download links are provided for each method
-      - **confusion matrix**:   determines the confusion matrix and other relevant information for two or more classes [download](https://www.mathworks.com/matlabcentral/fileexchange/60900-multi-class-confusion-matrix)
-      - **hline_vline**:                  generates horizontal and vertical lines on MATLAB plots [download](https://www.mathworks.com/matlabcentral/fileexchange/1039-hline-and-vline)
-      - **multiple_boxplot**:             generates multiple boxplots in a single MATLAB figure [download](https://www.mathworks.com/matlabcentral/fileexchange/47233-multiple_boxplot-m)
-      - **permn.m**:                      determines all possible permutations with repetition [download](https://www.mathworks.com/matlabcentral/fileexchange/7147-permn)
-      - **progressbar**:                  displays a progress bar to run a piece of code [download](https://www.mathworks.com/matlabcentral/fileexchange/6922-progressbar)
-      - **raacampbell-sigstar-5aabaeb**:  plots statistical significance stars onto MATLAB plots [download](https://www.mathworks.com/matlabcentral/fileexchange/39696-raacampbell-sigstar)
-      - **randomforest-matlab**:          Random Forests implementation in MATLAB that was specifically used for CARAMeL model development [download](https://www.mathworks.com/matlabcentral/fileexchange/31036-random-forest)
+      - **confusion matrix**:   determines the confusion matrix and other relevant information for two or more classes ([download](https://www.mathworks.com/matlabcentral/fileexchange/60900-multi-class-confusion-matrix))
+      - **hline_vline**:                  generates horizontal and vertical lines on MATLAB plots ([download](https://www.mathworks.com/matlabcentral/fileexchange/1039-hline-and-vline))
+      - **multiple_boxplot**:             generates multiple boxplots in a single MATLAB figure ([download](https://www.mathworks.com/matlabcentral/fileexchange/47233-multiple_boxplot-m))
+      - **permn.m**:                      determines all possible permutations with repetition ([download](https://www.mathworks.com/matlabcentral/fileexchange/7147-permn))
+      - **progressbar**:                  displays a progress bar to run a piece of code ([download](https://www.mathworks.com/matlabcentral/fileexchange/6922-progressbar))
+      - **raacampbell-sigstar-5aabaeb**:  plots statistical significance stars onto MATLAB plots ([download](https://www.mathworks.com/matlabcentral/fileexchange/39696-raacampbell-sigstar))
+      - **randomforest-matlab**:          Random Forests implementation in MATLAB that was specifically used for CARAMeL model development ([download](https://www.mathworks.com/matlabcentral/fileexchange/31036-random-forest))
     - **custom**: custom code files created for specific purposes. Refer to function file for details on input/output/usage
       - *extract_from_confMatStats.m*:    extracts information from a confusion matrix
       - *extract_metadata.m*:             extracts metadata from an Excel file
       - *gscatter2.m*:                    generates a 2D group scatter plot
       - *meansgraph.m*:                   customized modification to the built-in MATLAB function of the same name
-      - *process_chemgen_v2.m*:           processes chemogenomic data for *E. coli* [source](https://doi.org/10.15252/msb.20156777)
-      - *process_transcriptome_tb.m*:     processes transcriptomic data for *M. tb* [source](https://doi.org/10.1128/mBio.02627-19)
+      - *process_chemgen_v2.m*:           processes chemogenomic data for *E. coli* ([source](https://doi.org/10.15252/msb.20156777))
+      - *process_transcriptome_tb.m*:     processes transcriptomic data for *M. tb* ([source](https://doi.org/10.1128/mBio.02627-19))
       - *sig_boxplot.m*:                  generates a multple boxplot figure with significance annotations
 - **data**: folder containing all data files used for CARAMeL model development and downstream analyses
   - **supplementary**: folder containing supplementary data files
     - *ecoli_proteomics.xlsx*:            proteomics data for *E. coli*
     - *ecoli_transcriptomics.xlsx*:       transcriptomics data for *E. coli*
-  - *biolog_PM01_conditions.xlsx*:        list of all conditions in the Biolog phenotype microarray 1 (PM01) [source](https://www.biolog.com/products-portfolio-overview/phenotype-microarrays-for-microbial-cells/)
-  - *ecoli_chemogenomics.xlsx*:           chemogenomic data for *E. coli* [source](https://doi.org/10.1016/j.cell.2010.11.052)
+  - *biolog_PM01_conditions.xlsx*:        list of all conditions in the Biolog phenotype microarray 1 (PM01) ([source](https://www.biolog.com/products-portfolio-overview/phenotype-microarrays-for-microbial-cells/))
+  - *ecoli_chemogenomics.xlsx*:           chemogenomic data for *E. coli* ([source](https://doi.org/10.1016/j.cell.2010.11.052))
   - *ecoli_interactions.xlsx*:            drug interaction data for *E. coli*
   - *ecoli_media.xlsx*:                   details on different media conditions to simulate for the *E. coli* GEM
-  - *iEK1008.mat*:                        *M. tb* GEM [source](https://doi.org/10.1186/s12918-018-0557-y)
-  - *iJO1366.xml*:                        *E. coli* GEM [source](https://dx.doi.org/10.1038%2Fmsb.2011.65)
+  - *iEK1008.mat*:                        *M. tb* GEM ([source](https://doi.org/10.1186/s12918-018-0557-y))
+  - *iJO1366.xml*:                        *E. coli* GEM ([source](https://dx.doi.org/10.1038%2Fmsb.2011.65))
   - *mtb_interactions.xlsx*:              drug intearction data for *M. tb*
-  - *mtb_transcriptomics.xlsx*:           transcriptomic data for *M. tb* [source](https://doi.org/10.1128/mBio.02627-19)
+  - *mtb_transcriptomics.xlsx*:           transcriptomic data for *M. tb* ([source](https://doi.org/10.1128/mBio.02627-19))
 - **results**: folder containing all results from CARAMeL model analyses
   - *CARAMeL_summary.xlsx*:               summary data from the *E. coli* CARAMeL model
   - *CARAMeL_workspace.mat*:              MATLAB workspace file containing results of CARAMeL model development and analyses
