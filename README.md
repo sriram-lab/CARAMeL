@@ -6,9 +6,17 @@ This GitHub repository contains all code files used in data analysis and model d
 
 # Dependencies
 Successful implementation of the code files within this repository require the following external installations: 
-- [MATLAB] (LINK)
-- [Gurobi] (link)
-- [COBRA Toolbox] (link)
+- [MATLAB](https://www.mathworks.com/products/matlab.html): preferrably version 2019b or higher
+- [Gurobi](https://www.gurobi.com/): optimization solver; preferrably latest version
+- [COBRA Toolbox](https://github.com/opencobra/cobratoolbox): preferrably clone directly from GitHub
+
+# Installation and execution: 
+1. Install a local version of this repository using the following command in a terminal: 
+```
+git clone https://github.com/sriram-lab/CARAMeL.git
+```
+2. Ensure to add the CARAMeL repository into your MATLAB path (see instructions [here](https://www.mathworks.com/help/matlab/matlab_env/add-remove-or-reorder-folders-on-the-search-path.html)). 
+3. You should now be able to run all MATLAB livescript files in the main repository folder.
 
 # Repository structure
 The repository structure is outlined below. Of note, **folders** are designated in bold while *data/code files* are designated in italics. 
@@ -71,11 +79,3 @@ The repository structure is outlined below. Of note, **folders** are designated 
 - *CARAMeL_validations.mlx*:
 - *data_visualization.Rmd*: 
 - *data_visualization.html*: 
-
-* Installation and execution: 
-Install a local version of this repository using the following command in a terminal: 
-`git clone [link]`
-
-Ensure to add the CARAMeL repository into your MATLAB path (see instructions [here] (link)). 
-
-You should now be able to run all MATLAB livescript files in the main repository folder.
