@@ -79,3 +79,4 @@ The repository structure is outlined below. Of note, **folders** are designated 
 - *CARAMeL_validations.mlx*:              MATLAB livescript file that executes validations discussed in CARAMeL supplementary materials
 - *data_visualization.Rmd*:               R markdown file generating additional plots used for CARAMeL figures
 - *data_visualization.html*:              HTML file of the R markdown file
+- *README.md*:                            markdown file for CARAMeL readme documentation
