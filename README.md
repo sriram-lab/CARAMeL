@@ -67,7 +67,7 @@ The repository structure is outlined below. Of note, **folders** are designated 
   - *ecoli_media.xlsx*:                   details on different media conditions to simulate for the *E. coli* GEM
   - *iEK1008.mat*:                        *M. tb* GEM ([source](https://doi.org/10.1186/s12918-018-0557-y))
   - *iJO1366.xml*:                        *E. coli* GEM ([source](https://dx.doi.org/10.1038%2Fmsb.2011.65))
-  - *mtb_interactions.xlsx*:              drug intearction data for *M. tb*
+  - *mtb_interactions.xlsx*:              drug interaction data for *M. tb*
   - *mtb_transcriptomics.xlsx*:           transcriptomic data for *M. tb* ([source](https://doi.org/10.1128/mBio.02627-19))
 - **results**: folder containing all results from CARAMeL model analyses
   - *CARAMeL_summary.xlsx*:               summary data from the *E. coli* CARAMeL model
@@ -77,6 +77,6 @@ The repository structure is outlined below. Of note, **folders** are designated 
 - *CARAMeL_flux.mlx*:                     MATLAB livescript file that generates GEM flus simulation data for *E. coli* and *M. tb* CARAMeL models
 - *CARAMeL_main.mlx*:                     MATLAB livescript file that conducts all main analyses for CARAMeL approach
 - *CARAMeL_validations.mlx*:              MATLAB livescript file that executes validations discussed in CARAMeL supplementary materials
+- *README.md*:                            markdown file for CARAMeL readme documentation
 - *data_visualization.Rmd*:               R markdown file generating additional plots used for CARAMeL figures
 - *data_visualization.html*:              HTML file of the R markdown file
-- *README.md*:                            markdown file for CARAMeL readme documentation
