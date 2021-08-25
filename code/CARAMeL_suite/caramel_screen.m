@@ -217,7 +217,11 @@ EXAMPLE USAGE:
         Y = [Y nan(numel(Y), numel(s))];
         for i = 1:size(p, 1)
             Xseq = X; 
-            Xseq.names = X.names(:, [p(i, :) end]);
+            if isempty(c)
+                Xseq.names = X.names(:, p(i, :)); 
+            else
+                Xseq.names = X.names(:, [p(i, :) end]);
+            end
             if verbose
                 fprintf('Predicting sequential interactions (%d/%d)... \n', ...
                     i, size(p, 1))
