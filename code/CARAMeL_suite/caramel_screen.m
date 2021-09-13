@@ -180,6 +180,9 @@ EXAMPLE USAGE:
             error('Duration array size does not match Order specified.')
         end
     end
+    
+    % Make sure condition list is vertical
+    c = c(:); 
 
 %% DEFINE COMBINATIONS + GENERATE PREDICTIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
