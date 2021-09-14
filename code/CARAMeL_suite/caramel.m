@@ -392,7 +392,6 @@ EXAMPLE USAGE:
                 numel(t_idx) - 1, 2);
 %             delta = diff(interactionTime(i, t_idx) .* p_data(:, t_idx), ...
 %                 numel(t_idx) - 1, 2) ./ sum(interactionTime(i, t_idx));
-%             delta = diff(p_data(:, t_idx), sum(t_idx) - 1, 2) ./ time;
         end
         % define entropy features
         X(1:end - 2, i) = [sigma; delta; time];
