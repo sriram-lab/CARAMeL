@@ -109,26 +109,35 @@ EXAMPLE USAGE:
     end
     
     % Determine total importance scores
-    Pvalue = nan(size(rxn)); 
+    Pvalue = nan(size(rxn)); Direction = cell(size(rxn)); 
     for i = 1:numel(rxn)
         idx = logical(p(endsWith(features, rxn{i}), :));
         if size(idx, 1) > 1
             idx = logical(sum(idx)); 
         end
-        x = data.interactionScores(~idx); 
-        y = data.interactionScores(idx); 
-        [~, Pvalue(i)] = ttest2(x, y, 'VarType', 'unequal'); 
+        x = data.interactionScores(idx); 
+        y = data.interactionScores(~idx); 
+        [~, Pvalue(i), ~, stats] = ttest2(x, y, 'VarType', 'unequal'); 
+        if Pvalue(i) < 0.05
+            if stats.tstat < 0
+                Direction(i) = {'Synergy'}; 
+            elseif stats.tstat > 0
+                Direction(i) = {'Antagonism'}; 
+            end
+        else
+            Direction(i) = {'NS'}; 
+        end
     end
     
     % Define output
     if exist('rxnName', 'var') && exist('subSystem', 'var')
-        gem_table = table(rxn, rxnName, subSystem, Pvalue); 
+        gem_table = table(rxn, rxnName, subSystem, Pvalue, Direction); 
     elseif exist('rxnName', 'var') && ~exist('subSystem', 'var')
-        gem_table = table(rxn, rxnName, Pvalue); 
+        gem_table = table(rxn, rxnName, Pvalue, Direction); 
     elseif ~exist('rxnName', 'var') && exist('subSystem', 'var')
-        gem_table = table(rxn, subSystem, Pvalue); 
+        gem_table = table(rxn, subSystem, Pvalue, Direction); 
     else
-        gem_table = table(rxn, Pvalue); 
+        gem_table = table(rxn, Pvalue, Direction); 
     end
     gem_table = sortrows(gem_table, 'Pvalue', 'ascend'); 
     gem_table.Rank = transpose(1:numel(Pvalue));

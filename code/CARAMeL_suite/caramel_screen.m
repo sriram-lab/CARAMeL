@@ -182,7 +182,9 @@ EXAMPLE USAGE:
     end
     
     % Make sure condition list is vertical
-    c = c(:); 
+    if any(size(c) == 1)
+        c = c(:); 
+    end
 
 %% DEFINE COMBINATIONS + GENERATE PREDICTIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -191,8 +193,15 @@ EXAMPLE USAGE:
     if isempty(c)
         combos = d_combos; 
     else
-        combos = horzcat(repmat(d_combos, numel(c), 1), ...
-            repelem(c, size(d_combos, 1), 1)); 
+        if any(size(c) == 1)
+            combos = horzcat(repmat(d_combos, numel(c), 1), ...
+                repelem(c, size(d_combos, 1), 1)); 
+        else
+            cond = join(c, '+'); 
+            cond = repelem(cond, size(d_combos, 1), 1); 
+            cond = split(cond, '+'); 
+            combos = horzcat(repmat(d_combos, size(c, 1), 1), cond); 
+        end
     end
     X = struct('names', {combos}, 'scores', zeros(size(combos, 1), 1));     
     
@@ -209,7 +218,11 @@ EXAMPLE USAGE:
         if isempty(c)
             X.time = repmat(t, numel(X.scores), 1); 
         else
-            X.time = repmat([t NaN], numel(X.scores), 1); 
+            if any(size(c) == 1)
+                X.time = repmat([t NaN], numel(X.scores), 1); 
+            else
+                X.time = repmat([t nan(1, size(c, 2))], numel(X.scores), 1);
+            end
         end
         % define sequences
         p = permn(1:order, order); 
@@ -242,7 +255,12 @@ EXAMPLE USAGE:
     if isempty(c)
         t1.Properties.VariableNames = col;
     else
-        t1.Properties.VariableNames = horzcat(col, 'Media'); 
+        if any(size(c) == 1)
+            t1.Properties.VariableNames = horzcat(col, 'Media'); 
+        else
+            col2 = strcat('Media', string(1:size(c, 2))); 
+            t1.Properties.VariableNames = horzcat(col, col2); 
+        end
     end
     
     % Define prediction table
