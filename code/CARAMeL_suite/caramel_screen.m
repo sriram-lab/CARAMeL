@@ -185,6 +185,13 @@ EXAMPLE USAGE:
     if any(size(c) == 1)
         c = c(:); 
     end
+    
+    % Handle large requests
+    if numel(c) * nchoosek(numel(d), order) > 100000
+        partition = true; 
+    else
+        partition = false; 
+    end
 
 %% DEFINE COMBINATIONS + GENERATE PREDICTIONS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -209,8 +216,31 @@ EXAMPLE USAGE:
     if verbose
         disp('Predicting simultaneous interactions...')
     end
-    r = caramel(ps, X, 'predict', 'MLmodel', model, mainVarargin{:}); 
-    Y = r.predScores; 
+    if partition
+        Y = nan(size(combos, 1), 1); 
+        n = ceil(numel(Y) / 100000); 
+        fprintf('Large request. Partitioned job into %d sets. \n', n)
+        progressbar('Progress (simultaneous)...')
+        for k = 1:n
+            if k < n
+                [i1, i2] = deal((k - 1)*100000 + 1, k * 100000); 
+                x = struct('names', {X.names(i1:i2, :)}, ...
+                    'scores', X.scores(i1:i2)); 
+                r = caramel(ps, x, 'predict', 'MLmodel', model, mainVarargin{:}); 
+                Y(i1:i2) = r.predScores; 
+            else
+                i1 = (k - 1)*100000 + 1; 
+                x = struct('names', {X.names(i1:end, :)}, ...
+                    'scores', X.scores(i1:end)); 
+                r = caramel(ps, x, 'predict', 'MLmodel', model, mainVarargin{:}); 
+                Y(i1:end) = r.predScores; 
+            end
+            progressbar(k / n)
+        end
+    else
+        r = caramel(ps, X, 'predict', 'MLmodel', model, mainVarargin{:}); 
+        Y = r.predScores; 
+    end
     
     % Determine sequential predictions (if prompted)
     if seq
@@ -242,8 +272,33 @@ EXAMPLE USAGE:
                 fprintf('Predicting sequential interactions (%d/%d)... \n', ...
                     i, size(p, 1))
             end
-            r = caramel(ps, Xseq, 'predict', 'MLmodel', model, mainVarargin{:});
-            Y(:, i + 1) = r.predScores; 
+            if partition
+                y = nan(size(Xseq.scores)); 
+                progressbar(sprintf('Progress (sequential, %d/%d)...', ...
+                    i, order))
+                for k = 1:n
+                    if k < n
+                        [i1, i2] = deal((k - 1)*100000 + 1, k * 100000); 
+                        x = struct('names', {Xseq.names(i1:i2, :)}, ...
+                            'scores', Xseq.scores(i1:i2)); 
+                        r = caramel(ps, x, 'predict', 'MLmodel', model, ...
+                            mainVarargin{:}); 
+                        y(i1:i2) = r.predScores; 
+                    else
+                        i1 = (k - 1)*100000 + 1; 
+                        x = struct('names', {Xseq.names(i1:end, :)}, ...
+                            'scores', Xseq.scores(i1:end)); 
+                        r = caramel(ps, x, 'predict', 'MLmodel', model, ...
+                            mainVarargin{:}); 
+                        y(i1:end) = r.predScores; 
+                    end
+                    progressbar(k / n)
+                end
+                Y(:, i + 1) = y; 
+            else
+                r = caramel(ps, Xseq, 'predict', 'MLmodel', model, mainVarargin{:});
+                Y(:, i + 1) = r.predScores; 
+            end
         end
     end
     
