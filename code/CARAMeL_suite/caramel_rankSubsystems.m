@@ -1,4 +1,4 @@
-function top_subsystems = caramel_rankSubsystems(gem_table, gem)
+function top_subsystems = caramel_rankSubsystems(gem_table, gem, varargin)
 
 % DESCRIPTION: 
 % This function returns a list of sub-systems represented in GEM reactions
@@ -48,12 +48,20 @@ EXAMPLE USAGE:
     addRequired(p, 'gem_table', isValidGEMtable)
     addRequired(p, 'gem', isValidGEM)
     
+    % Define optional input validation functions
+    g = {'Sy', 'Se', 'Sy/Se', 'Sy/R', 'A', 'R', 'A/R', 'A/Se', 'all'}; 
+    isValidGroup = @(x) any(validatestring(x, g)); 
+    
+    % Define optional input parameters
+    addParameter(p, 'Group', 'all', isValidGroup)
+    
     % Parse through inputs
-    parse(p, gem_table, gem)
+    parse(p, gem_table, gem, varargin{:})
     
     % Define inputs by name
     t       = p.Results.gem_table; 
     gem     = p.Results.gem; 
+    group   = p.Results.Group; 
     
 %% ASCERTAIN INPUT COMPATIBILITY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -64,6 +72,11 @@ EXAMPLE USAGE:
     
     % Filter out non-significant portion
     t = t(t.Pvalue < 0.05, :); 
+    
+    % Define data to work with based on group
+    if ~strcmpi(group, 'all')
+        t = t(strcmpi(t.Direction, group), :); 
+    end
     
 %% RANK SUB-SYSTEMS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

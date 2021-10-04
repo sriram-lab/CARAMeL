@@ -56,8 +56,6 @@ EXAMPLE USAGE:
     isValidGEM = @(x) isstruct(x) && isfield(x, 'rxns'); 
     isValidData = @(x) isstruct(x) && all(isfield(x, ...
         {'interactionScores', 'jointProfiles'}));
-    isValidBoolean = @(x) islogical(x) || ...
-        (isnumeric(x) && (x == 0 || x == 1)); 
     
     % Define required input variables
     addRequired(p, 't_importance', isValidImp)
@@ -88,7 +86,17 @@ EXAMPLE USAGE:
         error('Interaction number and joint profile number do not match.')
     end
     if ~any(ismember(features, sd_features))
-        error('None of top features match join profile features.')
+        error('None of top features match joint profile features.')
+    end
+    
+    % Check if any interactions are sequential
+    if any(p(strcmpi(features, 'time'), :) > 0)
+        ix = p(strcmpi(features, 'time'), :) > 0; 
+        scores = struct(); 
+        scores.sim = data.interactionScores(~ix); 
+        scores.seq = data.interactionScores(ix); 
+    else
+        scores = data.interactionScores; 
     end
 
 %% MAP TOP FEATURES TO GEM DATA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -109,26 +117,111 @@ EXAMPLE USAGE:
     end
     
     % Determine total importance scores
-    Pvalue = nan(size(rxn)); 
+    Pvalue = nan(size(rxn)); Direction = cell(size(rxn)); 
     for i = 1:numel(rxn)
-        idx = logical(p(endsWith(features, rxn{i}), :));
-        if size(idx, 1) > 1
-            idx = logical(sum(idx)); 
+        ix1 = find(endsWith(features, rxn{i})); 
+        if isstruct(scores)
+            [psim, pseq] = deal(1, 1); 
+        else
+            psim = 1; 
         end
-        x = data.interactionScores(~idx); 
-        y = data.interactionScores(idx); 
-        [~, Pvalue(i)] = ttest2(x, y, 'VarType', 'unequal'); 
+        for j = 1:numel(ix1)
+            ix2 = logical(p(ix1(j), :)); 
+            % accout for both
+            if isstruct(scores) 
+                [ix3, ix4] = deal(ix2(~ix), ix2(ix)); 
+                [x1, y1] = deal(scores.sim(ix3), scores.sim(~ix3)); 
+                [x2, y2] = deal(scores.seq(ix4), scores.seq(~ix4)); 
+                [~, p1, ~, stats1] = ttest2(x1, y1, 'VarType', 'unequal'); 
+                [~, p2, ~, stats2] = ttest2(x2, y2, 'VarType', 'unequal');
+                if p1 < psim
+                    psim = p1; 
+                end
+                if p2 < pseq
+                    pseq = p2; 
+                end
+            % simultaneous only    
+            else 
+                [x, y] = deal(scores(ix2), scores(~ix2)); 
+                [~, p, ~, stats] = ttest2(x, y, 'VarType', 'unequal'); 
+                if p < psim
+                    psim = p; 
+                end
+            end
+        end
+        if isstruct(scores)
+            % both significant
+            if (psim < 0.05) && (pseq < 0.05)
+                Pvalue(i) = max([psim pseq]); 
+                if (stats1.tstat > 0) && (stats2.tstat > 0)
+                    Direction(i) = {'A/R'}; 
+                elseif (stats1.tstat < 0) && (stats2.tstat < 0)
+                    Direction(i) = {'Sy/Se'}; 
+                elseif (stats1.tstat < 0) && (stats2.tstat > 0)
+                    Direction(i) = {'Sy/R'}; 
+                else
+                    Direction(i) = {'A/Se'}; 
+                end
+            % simultaneous only
+            elseif (psim < 0.05)
+                Pvalue(i) = psim; 
+                if stats1.tstat > 0
+                    Direction(i) = {'A'}; 
+                else
+                    Direction(i) = {'Sy'}; 
+                end
+            % sequential only
+            elseif (pseq < 0.05)
+                Pvalue(i) = pseq; 
+                if stats2.tstat > 0
+                    Direction(i) = {'R'}; 
+                else
+                    Direction(i) = {'Se'}; 
+                end
+            % neither
+            else
+                Pvalue(i) = min([psim pseq]); 
+                Direction(i) = {'NS'}; 
+            end
+        else
+            Pvalue(i) = psim; 
+            if Pvalue(i) < 0.05
+                if stats.tstat < 0
+                    Direction(i) = {'Sy'}; 
+                elseif stats.tstat > 0
+                    Direction(i) = {'A'}; 
+                end
+            else
+                Direction(i) = {'NS'}; 
+            end
+        end
+%         idx = logical(p(endsWith(features, rxn{i}), :));
+%         if size(idx, 1) > 1
+%             idx = logical(sum(idx)); 
+%         end
+%         x = data.interactionScores(idx); 
+%         y = data.interactionScores(~idx); 
+%         [~, Pvalue(i), ~, stats] = ttest2(x, y, 'VarType', 'unequal'); 
+%         if Pvalue(i) < 0.05
+%             if stats.tstat < 0
+%                 Direction(i) = {'Synergy'}; 
+%             elseif stats.tstat > 0
+%                 Direction(i) = {'Antagonism'}; 
+%             end
+%         else
+%             Direction(i) = {'NS'}; 
+%         end
     end
     
     % Define output
     if exist('rxnName', 'var') && exist('subSystem', 'var')
-        gem_table = table(rxn, rxnName, subSystem, Pvalue); 
+        gem_table = table(rxn, rxnName, subSystem, Pvalue, Direction); 
     elseif exist('rxnName', 'var') && ~exist('subSystem', 'var')
-        gem_table = table(rxn, rxnName, Pvalue); 
+        gem_table = table(rxn, rxnName, Pvalue, Direction); 
     elseif ~exist('rxnName', 'var') && exist('subSystem', 'var')
-        gem_table = table(rxn, subSystem, Pvalue); 
+        gem_table = table(rxn, subSystem, Pvalue, Direction); 
     else
-        gem_table = table(rxn, Pvalue); 
+        gem_table = table(rxn, Pvalue, Direction); 
     end
     gem_table = sortrows(gem_table, 'Pvalue', 'ascend'); 
     gem_table.Rank = transpose(1:numel(Pvalue));

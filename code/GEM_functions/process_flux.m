@@ -82,6 +82,8 @@ function phenotype_struct = process_flux(flux_table, model, varargin)
         x(1) < 0 && x(2) > 0; 
     isValidName = @(x) isstring(x) || ischar(x) && ...
         ismember(x, {'rxn','rxnName','subSystem'}); 
+    isValidBoolean = @(x) islogical(x) || ...
+        (isnumeric(x) && (x == 0 || x == 1)); 
     
     % Define required input variables
     addRequired(p, 'flux_table', isValidFluxTable)
@@ -90,15 +92,17 @@ function phenotype_struct = process_flux(flux_table, model, varargin)
     % Define optional input parameters
     addParameter(p, 'Threshold', [-2 2], isValidThreshold)
     addParameter(p, 'Label', 'rxn', isValidName)
+    addParameter(p, 'RemoveZeros', true, isValidBoolean)
     
     % Parse through inputs
     parse(p, flux_table, model, varargin{:})
     
     % Define inputs by name
-    flux_table =    p.Results.flux_table; 
-    model =         p.Results.model; 
-    threshold =     p.Results.Threshold; 
-    label =         p.Results.Label; 
+    flux_table  = p.Results.flux_table; 
+    model       = p.Results.model; 
+    threshold   = p.Results.Threshold; 
+    label       = p.Results.Label; 
+    remZs       = logical(p.Results.RemoveZeros); 
 
 %% ASCERTAIN INPUT COMPATIBILITY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -131,9 +135,11 @@ function phenotype_struct = process_flux(flux_table, model, varargin)
     % Simulate flux for control (WT)
     z = constrain_flux_regulation(model, {}, {}, [], [], [], 0); 
     
-    % Remove all-zero rows
-    zero_idx = sum([flux z], 2) == 0; 
-    flux(zero_idx,:) = []; labels(zero_idx) = []; z(zero_idx) = [];
+    % Remove all-zero rows (if prompted)
+    if remZs
+        zero_idx = sum([flux z], 2) == 0; 
+        flux(zero_idx,:) = []; labels(zero_idx) = []; z(zero_idx) = [];
+    end
     
     % Convert zeros to small non-zero value
     abs_num = abs([flux(:); z(:)]); 
@@ -147,15 +153,21 @@ function phenotype_struct = process_flux(flux_table, model, varargin)
 
     % Negative flux change (compared to WT)
     neg_flux = data < threshold(1);
-    neg_idx = sum(neg_flux, 2) == 0; 
-    neg_flux(neg_idx, :) = []; 
-    neg_labels = strcat('neg-', labels(~neg_idx));
+    neg_labels = strcat('neg-', labels); 
+    if remZs
+        neg_idx = sum(neg_flux, 2) == 0; 
+        neg_flux(neg_idx, :) = []; 
+        neg_labels(neg_idx) = [];
+    end
     
 	% Positive flux change (compared to WT)
     pos_flux = data > threshold(2); 
-    pos_idx = sum(pos_flux, 2) == 0; 
-    pos_flux(pos_idx, :) = []; 
-    pos_labels = strcat('pos-', labels(~pos_idx));
+    pos_labels = strcat('pos-', labels);
+    if remZs
+        pos_idx = sum(pos_flux, 2) == 0; 
+        pos_flux(pos_idx, :) = []; 
+        pos_labels(pos_idx) = [];
+    end
     
 %% DEFINE OUTPUT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
