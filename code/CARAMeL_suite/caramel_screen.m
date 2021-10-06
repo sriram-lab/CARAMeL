@@ -275,12 +275,13 @@ EXAMPLE USAGE:
             if partition
                 y = nan(size(Xseq.scores)); 
                 progressbar(sprintf('Progress (sequential, %d/%d)...', ...
-                    i, order))
+                    i, size(p, 1)))
                 for k = 1:n
                     if k < n
                         [i1, i2] = deal((k - 1)*100000 + 1, k * 100000); 
                         x = struct('names', {Xseq.names(i1:i2, :)}, ...
-                            'scores', Xseq.scores(i1:i2)); 
+                            'scores', Xseq.scores(i1:i2), ...
+                            'time', {Xseq.time(i1:i2, :)}); 
                         r = caramel(ps, x, 'predict', 'MLmodel', model, ...
                             mainVarargin{:}); 
                         y(i1:i2) = r.predScores; 
