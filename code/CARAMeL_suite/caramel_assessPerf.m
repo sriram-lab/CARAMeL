@@ -306,13 +306,13 @@ EXAMPLE USAGE:
     % Plots
     if showPlots
         if strcmpi(d.MLmethod, 'regression')
-            if all(ismember(classes, interactionClass))
+            if all(ismember(classes, d.interactionClass))
                 type = {'scatter','confusion','box','roc'};
             else
                 type = {'scatter','confusion'};
             end
         else
-            if all(ismember(classes, interactionClass))
+            if all(ismember(classes, d.interactionClass))
                 type = {'confusion','roc'};
             else
                 type = {'confusion'};
