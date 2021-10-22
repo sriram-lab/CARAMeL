@@ -35,12 +35,16 @@ function phenotype_struct = process_flux(flux_table, model, varargin)
            -> type:     integer or double vector 
            -> dim:      1 x 2 (1st element = negative threshold, 
                                2nd element = positive threshold)
-           -> default:  threshold = [-2 2]
+           -> default:  Threshold = [-2 2]
     
         2. Label:       specify what info to use for 'phenotype_label'
            -> type:     string or char
            -> note:     choose from {'rxn','rxnName','subSystem'}
-           -> default:  label = 'rxn'
+           -> default:  Label = 'rxn'
+    
+        3. RemoveZeros: Boolean for removing all-zero vectors
+           -> type:     Boolean
+           -> default:  RemoveZeros = true
 
     OUTPUTS: 
         1. phenotype_struct:    MATLAB structure containing the following
