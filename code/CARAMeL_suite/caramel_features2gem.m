@@ -117,7 +117,8 @@ EXAMPLE USAGE:
     end
     
     % Determine total importance scores
-    Pvalue = nan(size(rxn)); Direction = cell(size(rxn)); 
+    Pvalue = nan(size(rxn)); 
+    Direction = cell(size(rxn)); Interaction = Direction;
     for i = 1:numel(rxn)
         ix1 = find(endsWith(features, rxn{i})); 
         if isstruct(scores)
@@ -135,17 +136,20 @@ EXAMPLE USAGE:
                 [~, p1, ~, stats1] = ttest2(x1, y1, 'VarType', 'unequal'); 
                 [~, p2, ~, stats2] = ttest2(x2, y2, 'VarType', 'unequal');
                 if p1 < psim
-                    psim = p1; 
+                    [psim, tsim] = deal(p1, stats1.tstat); 
+                    fsim = features{ix1(j)}; 
                 end
                 if p2 < pseq
-                    pseq = p2; 
+                    [pseq, tseq] = deal(p2, stats2.tstat); 
+                    fseq = features{ix1(j)}; 
                 end
             % simultaneous only    
             else 
                 [x, y] = deal(scores(ix2), scores(~ix2)); 
                 [~, p, ~, stats] = ttest2(x, y, 'VarType', 'unequal'); 
                 if p < psim
-                    psim = p; 
+                    [psim, tsim] = deal(p, stats.tstat); 
+                    fsim = features{ix1(j)}; 
                 end
             end
         end
@@ -153,46 +157,49 @@ EXAMPLE USAGE:
             % both significant
             if (psim < 0.05) && (pseq < 0.05)
                 Pvalue(i) = max([psim pseq]); 
-                if (stats1.tstat > 0) && (stats2.tstat > 0)
-                    Direction(i) = {'A/R'}; 
-                elseif (stats1.tstat < 0) && (stats2.tstat < 0)
-                    Direction(i) = {'Sy/Se'}; 
-                elseif (stats1.tstat < 0) && (stats2.tstat > 0)
-                    Direction(i) = {'Sy/R'}; 
+                Direction{i} = [fsim(7:9) '/' fseq(7:9)]; 
+                if (tsim > 0) && (tseq > 0)
+                    Interaction(i) = {'A/R'}; 
+                elseif (tsim < 0) && (tseq < 0)
+                    Interaction(i) = {'Sy/Se'}; 
+                elseif (tsim < 0) && (tseq > 0)
+                    Interaction(i) = {'Sy/R'}; 
                 else
-                    Direction(i) = {'A/Se'}; 
+                    Interaction(i) = {'A/Se'}; 
                 end
             % simultaneous only
             elseif (psim < 0.05)
-                Pvalue(i) = psim; 
-                if stats1.tstat > 0
-                    Direction(i) = {'A'}; 
+                Pvalue(i) = psim; Direction{i} = fsim(7:9); 
+                if tsim > 0
+                    Interaction(i) = {'A'}; 
                 else
-                    Direction(i) = {'Sy'}; 
+                    Interaction(i) = {'Sy'}; 
                 end
             % sequential only
             elseif (pseq < 0.05)
-                Pvalue(i) = pseq; 
-                if stats2.tstat > 0
-                    Direction(i) = {'R'}; 
+                Pvalue(i) = pseq; Direction{i} = fseq(7:9); 
+                if tseq > 0
+                    Interaction(i) = {'R'}; 
                 else
-                    Direction(i) = {'Se'}; 
+                    Interaction(i) = {'Se'}; 
                 end
             % neither
             else
-                Pvalue(i) = min([psim pseq]); 
-                Direction(i) = {'NS'}; 
+                Pvalue(i) = min([psim pseq]); Direction{i} = 'NA';
+                Interaction(i) = {'NS'}; 
             end
         else
             Pvalue(i) = psim; 
             if Pvalue(i) < 0.05
-                if stats.tstat < 0
-                    Direction(i) = {'Sy'}; 
-                elseif stats.tstat > 0
-                    Direction(i) = {'A'}; 
+                Direction{i} = fsim(7:9); 
+                if tsim < 0
+                    Interaction(i) = {'Sy'}; 
+                elseif tsim > 0
+                    Interaction(i) = {'A'}; 
                 end
             else
-                Direction(i) = {'NS'}; 
+                Direction{i} = 'NA'; 
+                Interaction(i) = {'NS'}; 
             end
         end
 %         idx = logical(p(endsWith(features, rxn{i}), :));
@@ -204,24 +211,27 @@ EXAMPLE USAGE:
 %         [~, Pvalue(i), ~, stats] = ttest2(x, y, 'VarType', 'unequal'); 
 %         if Pvalue(i) < 0.05
 %             if stats.tstat < 0
-%                 Direction(i) = {'Synergy'}; 
+%                 Interaction(i) = {'Synergy'}; 
 %             elseif stats.tstat > 0
-%                 Direction(i) = {'Antagonism'}; 
+%                 Interaction(i) = {'Antagonism'}; 
 %             end
 %         else
-%             Direction(i) = {'NS'}; 
+%             Interaction(i) = {'NS'}; 
 %         end
     end
+%     Direction = regexprep(Direction, 'pos', '+'); 
+%     Direction = regexprep(Direction, 'neg', '-'); 
     
     % Define output
     if exist('rxnName', 'var') && exist('subSystem', 'var')
-        gem_table = table(rxn, rxnName, subSystem, Pvalue, Direction); 
+        gem_table = table(rxn, rxnName, subSystem, ...
+            Pvalue, Direction, Interaction); 
     elseif exist('rxnName', 'var') && ~exist('subSystem', 'var')
-        gem_table = table(rxn, rxnName, Pvalue, Direction); 
+        gem_table = table(rxn, rxnName, Pvalue, Direction, Interaction); 
     elseif ~exist('rxnName', 'var') && exist('subSystem', 'var')
-        gem_table = table(rxn, subSystem, Pvalue, Direction); 
+        gem_table = table(rxn, subSystem, Pvalue, Direction, Interaction); 
     else
-        gem_table = table(rxn, Pvalue, Direction); 
+        gem_table = table(rxn, Pvalue, Direction, Interaction); 
     end
     gem_table = sortrows(gem_table, 'Pvalue', 'ascend'); 
     gem_table.Rank = transpose(1:numel(Pvalue));
