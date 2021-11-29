@@ -96,7 +96,7 @@ function phenotype_struct = process_flux(flux_table, model, varargin)
     % Define optional input parameters
     addParameter(p, 'Threshold', [-2 2], isValidThreshold)
     addParameter(p, 'Label', 'rxn', isValidName)
-    addParameter(p, 'RemoveZeros', true, isValidBoolean)
+    addParameter(p, 'RemoveZeros', false, isValidBoolean)
     
     % Parse through inputs
     parse(p, flux_table, model, varargin{:})
