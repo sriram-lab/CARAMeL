@@ -1,5 +1,5 @@
 ---
-title: "CARAMeL heatmap visualization"
+title: "CARAMeL visualization"
 author: "Carolina H. Chung"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: 
@@ -7,43 +7,62 @@ output:
     code_folding: hide
 ---
 
-This is an R Markdown Notebook for visualizing heatmaps from CARAMeL manuscript. 
+This is an R Markdown Notebook for generating figure components for the CARAMeL manuscript. 
 
 # Set up environment
 
-Install and load required pakcages.
+Install required packages.
 
-```{r install packages, include=F}
+```{r install_packages, results="hide", message=F, warning=F, error=F}
 
-# svDialogs (for popup user input)
-  install.packages('svDialogs')
+# Define packages to install
+pkg.list = c('svDialogs', 'dplyr', 'readxl', 'RColorBrewer', 'pheatmap')
 
-# dplyr (for piping functions)
-  install.packages('dplyr')
+# Define packages not already installed
+pkg.install <- pkg.list[!(pkg.list %in% installed.packages()[, 'Package'])]
 
-# readxl (for reading Excel files)
-  install.packages('readxl')
-
-# pheatmap (for pretty heatmaps)
-  if (!require("devtools")) {
-    install.packages("devtools", dependencies = TRUE)
+# Install pheatmap from GitHub 
+if ('pheatmap' %in% pkg.install) {
+  if (!require('devtools')) {
+    install.packages('devtools', dependencies=T)
     library(devtools)
   }
-  install_github("raivokolde/pheatmap")
-  
-# RColorBrewer (for custom color palettes)
-  install.packages('RColorBrewer')
+  install_github('raivokolde/pheatmap')
+  pkg.install <- pkg.install[!(pkg.install %in% 'pheatmap')]
+}
+
+# Install other uninstalled packages
+if (length(pkg.install) > 0) {
+  install.packages(pkg.install)
+}
 
 ```
 
+Load installed packages. 
+
 ```{r load packages, include=F}
 
-  library(svDialogs)
-  library(dplyr)
-  library(readxl)
-  library(pheatmap)
-  library(RColorBrewer)
+library(svDialogs)    # for user-defined inputs
+library(dplyr)        # for pipe-based processing
+library(readxl)       # for reading Excel files
+library(RColorBrewer) # for custom color palettes
+library(pheatmap)     # for generating heatmaps
   
+```
+
+# Set user-defined inputs
+
+Define user-based inputs.
+
+```{r user_inputs}
+
+# Color palette
+col <- c(brewer.pal(9, 'Set1'), brewer.pal(3, 'Accent'))
+
+# Save plots?
+save.plot <- dlgInput('Save heatmaps? (T/F)', Sys.info()['F'])$res %>% 
+  as.logical(.)
+
 ```
 
 # Load data 
@@ -56,215 +75,258 @@ Load data to visualize. Specifically:
 ```{r load data}
 
 # Create dataset variable
-  dataset <- list()
-  
-# EC (Biolog)
-  dataset$EC$bio <- read_excel('results/plot_data.xlsx', sheet='ecoli_biolog')
-  
-# EC (predictions)
-  dataset$EC$pred <- read_excel('results/plot_data.xlsx', 
-                                sheet='pred2_heatmap')
-  dataset$EC$pred3 <- read_excel('results/plot_data.xlsx', 
-                                sheet='pred3_heatmap')
-  dataset$EC$predp <- read_excel('results/plot_data.xlsx', 
-                                sheet='popFBA_heatmap')
-  
-# popFBA
-  dataset$popFBA$flux <- read_excel('results/plot_data.xlsx', 
-                                    sheet='popFBA_flux')
-  
-# entropy
-  dataset$entropy <- read_excel('results/plot_data.xlsx', sheet='entropy')
-  
-# Color palette
-  col <- c(brewer.pal(9, 'Set1'), brewer.pal(3, 'Accent'))
-  
-# Save plots?
-  save.plot <- dlgInput("Save heatmaps? (T/F)", Sys.info()['F'])$res %>% 
-    as.logical(.)
+dataset <- list()
 
+# EC (Biolog)
+dataset$EC$bio <- read_excel('results/plot_data.xlsx', sheet='ecoli_biolog')
+
+# EC (predictions)
+dataset$EC$pred <- read_excel('results/plot_data.xlsx', sheet='pred2_heatmap')
+dataset$EC$pred3 <- read_excel('results/plot_data.xlsx', sheet='pred3_heatmap')
+dataset$EC$predp <- read_excel('results/plot_data.xlsx', sheet='popFBA_heatmap')
+
+# popFBA
+dataset$popFBA$flux <- read_excel('results/plot_data.xlsx', sheet='popFBA_flux')
+  
 ```
 
 # Generate plots
 
-Visualize all *E. coli* and *M. tb* results.
+Biolog heatmap. 
 
 ```{r E. coli interactions (Biolog), warning = F}
 
 # Re-organize data
-  dataset$EC$bio$Media <- dataset$EC$bio$Media %>% 
-    factor(., levels=unique(.))
-  y <- dataset$EC$bio[, -c(1:2)]
-  rownames(y) <- dataset$EC$bio$Media
-  
+dataset$EC$bio$Media <- dataset$EC$bio$Media %>% factor(., levels=unique(.))
+y <- dataset$EC$bio[, -c(1:2)]; rownames(y) <- dataset$EC$bio$Media
+
 # Define metadata
-  gx <- data.frame(Simulated=dataset$EC$bio$Simulatable %>% 
-                     factor(., levels=unique(.)))
-  rownames(gx) <- rownames(y)
-  gy <- data.frame(Subset=c(rep('train', 4), rep('test', 2)) %>% 
-                    factor(., levels=unique(.)), 
-                   Target=c(rep('Cell wall', 2), 
-                            rep('Protein synthesis, 30S', 2), 
-                            rep('Multiple mechanisms', 2)) %>% 
-                    factor(., levels=unique(.)))
-  rownames(gy) <- colnames(y)
-  
-# Use RedBlue color palette (asymmetric)
-  col.pal <- colorRampPalette(colors=c("snow2", "orchid3"),space="Lab")(100)
-  
+gx <- data.frame(Simulated=dataset$EC$bio$Simulatable %>% 
+                   factor(., levels=unique(.)))
+rownames(gx) <- rownames(y)
+gy <- data.frame(Subset=c(rep('train', 4), rep('test', 2)) %>% 
+                  factor(., levels=unique(.)), 
+                 Target=c(rep('Cell wall', 2), 
+                          rep('Protein synthesis, 30S', 2), 
+                          rep('Multiple mechanisms', 2)) %>% 
+                  factor(., levels=unique(.)))
+rownames(gy) <- colnames(y)
+
+# Use custom color palette (asymmetric)
+col.pal <- colorRampPalette(colors=c('snow2', 'orchid3'), space='Lab')(100)
+
 # Define annotation colors
-  col.annot <- list(Simulated=c(Yes='limegreen', No='gray'), 
-                    Subset=c(train='lightgoldenrod', test='green4'), 
-                    Target=c(`Cell wall`='darkorange', 
-                             `Protein synthesis, 30S`='turquoise3',
-                             `Multiple mechanisms`='sienna'))
-  names(col.annot$Simulated) <- levels(gx$Simulated)
-  names(col.annot$Subset) <- levels(gy$Subset)
-  names(col.annot$Target) <- levels(gy$Target)
-  gz <- data.frame(Target=gy$Target)
-  rownames(gz) <- rownames(gy)
+col.annot <- list(Simulated=c(Yes='limegreen', No='gray'), 
+                  Subset=c(train='lightgoldenrod', test='green4'), 
+                  Target=c(`Cell wall`='darkorange', 
+                           `Protein synthesis, 30S`='turquoise3',
+                           `Multiple mechanisms`='sienna'))
+names(col.annot$Simulated) <- levels(gx$Simulated)
+names(col.annot$Subset) <- levels(gy$Subset)
+names(col.annot$Target) <- levels(gy$Target)
+gz <- data.frame(Target=gy$Target)
+rownames(gz) <- rownames(gy)
 
 # Visualize plot
-  p1 <- pheatmap(t(y), cluster_rows=F, cluster_cols=F, gaps_row=4, gaps_col=96,
-           legend_breaks=c(min(y), 0.5, 1, 1.5, max(y)-0.05), border_color=T,
-           legend_labels=c('0','0.5','1','1.5','Respiration'),
-           annotation_row=gz, annotation_col=gx, annotation_colors=col.annot,
-           color=col.pal, angle_col='90', show_colnames=F, cellheight=15,
-           cellwidth=2, main='Drug-media interactions')
-  p1
-  
+p1 <- pheatmap(t(y), cluster_rows=F, cluster_cols=F, gaps_row=4, gaps_col=96,
+         legend_breaks=c(min(y), 0.5, 1, 1.5, max(y)-0.05), border_color=T,
+         legend_labels=c('0','0.5','1','1.5','Respiration'),
+         annotation_row=gz, annotation_col=gx, annotation_colors=col.annot,
+         color=col.pal, angle_col='90', show_colnames=F, cellheight=15,
+         cellwidth=2, main='Drug-media interactions')
+p1
+
 # Save plot (if prompted)
-  if (save.plot) {
-    tiff('results/R_plots/biolog_heatmap.tiff', units='in', 
-         width=7, height=2.5, res=300)
-    print({
-      p1
-    })
-    dev.off()
-  }
+if (save.plot) {
+  tiff('results/R_plots/biolog_heatmap.tiff', units='in', 
+       width=7, height=2.5, res=300)
+  print({
+    p1
+  })
+  dev.off()
+}
 
 ```
+
+Heatmap of 2-way predictions. 
 
 ```{r E. coli predictions (2-way), warning = F}
 
 # Re-organize data
-  y <- dataset$EC$pred[, -1]
-  rownames(y) <- dataset$EC$pred$Pair
-  
+y <- dataset$EC$pred[, -1]; rownames(y) <- dataset$EC$pred$Pair
+
 # Use RedBlue color palette (asymmetric)
-  n <- round(100*(max(y) - min(y)))
-  x <- n + round(100*min(y))
-  col.neg <- colorRampPalette(colors=c("royalblue3", "white"), 
-                              space="Lab")(abs(round(100*min(y))))
-  col.pos <- colorRampPalette(colors=c("white", "red4"), 
-                              space="Lab")(abs(round(100*max(y))))
-  col.pal <- c(col.neg, col.pos)
+n <- round(100*(max(y) - min(y)))
+x <- n + round(100*min(y))
+col.neg <- colorRampPalette(colors=c('royalblue3', 'white'), 
+                            space='Lab')(abs(round(100*min(y))))
+col.pos <- colorRampPalette(colors=c('white', 'red4'), 
+                            space='Lab')(abs(round(100*max(y))))
+col.pal <- c(col.neg, col.pos)
 
 # Visualize plot
-  p2 <- pheatmap(y, cluster_rows=F, cluster_cols=F, gaps_col=c(57, 114),
-           clustering_distance_rows='manhattan', color=col.pal, 
-           legend_breaks=c(min(y)+0.03, 0, max(y)-0.03), border_color=NA, 
-           legend_labels=c('Synergy','Neutral','Antagonism'), 
-           show_rownames=F, show_colnames=F, cellheight=2, cellwidth=2)
-  p2
-  
+p2 <- pheatmap(y, cluster_rows=F, cluster_cols=F, gaps_col=c(57, 114),
+         clustering_distance_rows='manhattan', color=col.pal, 
+         legend_breaks=c(min(y)+0.03, 0, max(y)-0.03), border_color=NA, 
+         legend_labels=c('Synergy','Neutral','Antagonism'), 
+         show_rownames=F, show_colnames=F, cellheight=2, cellwidth=2)
+p2
+
 # Save plot (if prompted)
-  if (save.plot) {
-    tiff('results/R_plots/pred2_heatmap.tiff', units='in', 
-         width=6.5, height=2.4, res=300)
-    print({
-      p2
-    })
-    dev.off()
-  }
+if (save.plot) {
+  tiff('results/R_plots/pred2_heatmap.tiff', units='in', 
+       width=6.5, height=2.4, res=300)
+  print({
+    p2
+  })
+  dev.off()
+}
 
 ```
+
+Heatmap of 3-way predictions. 
 
 ```{r E. coli predictions (3-way), warning = F}
 
 # Re-organize data
-  y <- dataset$EC$pred3[, -1]
-  rownames(y) <- dataset$EC$pred3$Pair
-  
+y <- dataset$EC$pred3[, -1]
+rownames(y) <- dataset$EC$pred3$Pair
+
 # Use RedBlue color palette (asymmetric)
-  n <- round(100*(max(y) - min(y)))
-  x <- n + round(100*min(y))
-  col.neg <- colorRampPalette(colors=c("royalblue3", "white"), 
-                              space="Lab")(abs(round(100*min(y))))
-  col.pos <- colorRampPalette(colors=c("white", "red4"), 
-                              space="Lab")(abs(round(100*max(y))))
-  col.pal <- c(col.neg, col.pos)
+n <- round(100*(max(y) - min(y)))
+x <- n + round(100*min(y))
+col.neg <- colorRampPalette(colors=c('royalblue3', 'white'), 
+                            space='Lab')(abs(round(100*min(y))))
+col.pos <- colorRampPalette(colors=c('white', 'red4'), 
+                            space='Lab')(abs(round(100*max(y))))
+col.pal <- c(col.neg, col.pos)
 
 # Visualize plot
-  p2 <- pheatmap(y, cluster_rows=F, cluster_cols=F, 
-                 gaps_col=c(57, 2*57, 3*57, 4*57, 5*57, 6*57),
-           clustering_distance_rows='manhattan', color=col.pal, 
-           legend_breaks=c(min(y)+0.03, 0, max(y)-0.03), border_color=NA, 
-           legend_labels=c('Synergy','Neutral','Antagonism'), 
-           show_rownames=F, show_colnames=F, cellheight=1, cellwidth=1)
-  p2
-  
+p2 <- pheatmap(y, cluster_rows=F, cluster_cols=F, 
+               gaps_col=c(57, 2*57, 3*57, 4*57, 5*57, 6*57),
+         clustering_distance_rows='manhattan', color=col.pal, 
+         legend_breaks=c(min(y)+0.03, 0, max(y)-0.03), border_color=NA, 
+         legend_labels=c('Synergy','Neutral','Antagonism'), 
+         show_rownames=F, show_colnames=F, cellheight=1, cellwidth=1)
+p2
+
 # Save plot (if prompted)
-  if (save.plot) {
-    tiff('results/R_plots/pred3_heatmap.tiff', units='in', 
-         width=7.5, height=2.5, res=300)
-    print({
-      p2
-    })
-    dev.off()
-  }
+if (save.plot) {
+  tiff('results/R_plots/pred3_heatmap.tiff', units='in', 
+       width=7.5, height=2.5, res=300)
+  print({
+    p2
+  })
+  dev.off()
+}
 
 ```
+
+Heatmap of cell-specific predictions (popFBA). 
 
 ```{r E. coli predictions (popFBA), warning = F}
 
 # Re-organize data
-  x <- dataset$popFBA$flux %>% 
-    relocate(colnames(.)[.[1, ]==2], .after=last_col())
-  y <- dataset$EC$predp[, -1]
-  rownames(y) <- dataset$EC$predp$Pair
-  y <- y[, colnames(y) %in% colnames(x)] %>%  .[, colnames(x)[-c(1, 2)]] %>% 
-    rbind(x[1, -c(1, 2)], .) %>% 
-    relocate(colnames(.)[.[1, ]==2], .after=last_col())
-  z1 <- y[-1, colnames(y)[y[1, ]==1]]
-  z2 <- y[-1, colnames(y)[y[1, ]==2]]
-  y <- cbind(z1[, 1:50], z2[, 1:50])
-  
+x <- dataset$popFBA$flux %>% 
+  relocate(colnames(.)[.[1, ]==2], .after=last_col())
+y <- dataset$EC$predp[, -1]
+rownames(y) <- dataset$EC$predp$Pair
+y <- y[, colnames(y) %in% colnames(x)] %>%  .[, colnames(x)[-c(1, 2)]] %>% 
+  rbind(x[1, -c(1, 2)], .) %>% 
+  relocate(colnames(.)[.[1, ]==2], .after=last_col())
+z1 <- y[-1, colnames(y)[y[1, ]==1]]
+z2 <- y[-1, colnames(y)[y[1, ]==2]]
+y <- cbind(z1[, 1:50], z2[, 1:50])
+
 # Use RedBlue color palette (asymmetric)
-  n <- round(100*(max(y) - min(y)))
-  x <- n + round(100*min(y))
-  col.neg <- colorRampPalette(colors=c("royalblue3", "white"), 
-                              space="Lab")(abs(round(100*min(y))))
-  col.pos <- colorRampPalette(colors=c("white", "red4"), 
-                              space="Lab")(abs(round(100*max(y))))
-  col.pal <- c(col.neg, col.pos)
-  
+n <- round(100*(max(y) - min(y)))
+x <- n + round(100*min(y))
+col.neg <- colorRampPalette(colors=c('royalblue3', 'white'), 
+                            space='Lab')(abs(round(100*min(y))))
+col.pos <- colorRampPalette(colors=c('white', 'red4'), 
+                            space='Lab')(abs(round(100*max(y))))
+col.pal <- c(col.neg, col.pos)
+
 # Annotations
-  Cluster <- data.frame(Cluster=as.character(rep(c(1, 2), each=50)), 
-                        row.names=colnames(y))
-  annot.pal <- list(Cluster=c('1'='goldenrod', '2'='darkgreen'))
+Cluster <- data.frame(Cluster=as.character(rep(c(1, 2), each=50)), 
+                      row.names=colnames(y))
+annot.pal <- list(Cluster=c('1'='goldenrod', '2'='darkgreen'))
 
 # Visualize plot
-  p2 <- pheatmap(y, cluster_rows=F, cluster_cols=F, gaps_col=c(50),
-           clustering_distance_rows='manhattan', color=col.pal, 
-           legend_breaks=c(min(y)+0.01, 0, max(y)-0.01), border_color=NA, 
-           annotation_col=Cluster, annotation_colors=annot.pal, 
-           legend_labels=c('Synergy','Neutral','Antagonism'), 
-           show_rownames=F, show_colnames=F, cellheight=2, cellwidth=2, 
-           main='Predicted interaction scores')
-  p2
-  
+p2 <- pheatmap(y, cluster_rows=F, cluster_cols=F, gaps_col=c(50),
+         clustering_distance_rows='manhattan', color=col.pal, 
+         legend_breaks=c(min(y)+0.01, 0, max(y)-0.01), border_color=NA, 
+         annotation_col=Cluster, annotation_colors=annot.pal, 
+         legend_labels=c('Synergy','Neutral','Antagonism'), 
+         show_rownames=F, show_colnames=F, cellheight=2, cellwidth=2, 
+         main='Predicted interaction scores')
+p2
+
 # Save plot (if prompted)
-  if (save.plot) {
-    tiff('results/R_plots/popFBA_heatmap.tiff', units='in', 
-         width=5, height=2, res=300)
-    print({
-      p2
-    })
-    dev.off()
-  }
+if (save.plot) {
+  tiff('results/R_plots/popFBA_heatmap.tiff', units='in', 
+       width=5, height=2, res=300)
+  print({
+    p2
+  })
+  dev.off()
+}
 
 ```
+
+Heatmap of cell-specific fluxes (popFBA). 
+
+```{r popFBA flux, warning = F}
+
+# Re-organize data
+x <- dataset$popFBA$flux %>% select(rxn, subSystem, colnames(y))
+# y <- x[-1, -c(1, 2)]
+y <- x[-1, -c(1, 2)] %>% t(.) %>% scale(.) %>% t(.) %>% 
+  as.data.frame(., row.names=make.unique(x$rxn[-1])) %>% 
+  arrange()
+# y[y > 2] <- 2; y[y < -2] <- -2
+rownames(y) <- x$rxn[-1] %>% make.unique(.)
+colnames(y) <- colnames(x)[-c(1, 2)]
+
+# Define metadata
+Pathway <- data.frame(Pathway=x$subSystem[-1], row.names=rownames(y))
+Cluster <- data.frame(Cluster=as.character(x[1, -c(1, 2)]), 
+                      row.names=colnames(y))
+
+# Use RedBlue color palette 
+col.neg <- colorRampPalette(colors=c('royalblue3', 'white'), 
+                            space='Lab')(abs(round(100*min(y))))
+col.pos <- colorRampPalette(colors=c('white', 'red4'), 
+                            space='Lab')(abs(round(100*max(y))))
+col.pal <- c(col.neg, col.pos)
+
+# Use custom annotation palette 
+col <- rev(brewer.pal(dim(unique(Pathway))[1], 'Set3'))
+names(col) <- unique(Pathway$Pathway)
+annot.pal <- list(Pathway=col, Cluster=c('1'='goldenrod', '2'='darkgreen'))
+
+# Visualize plot
+p2 <- pheatmap(y, scale='none', show_rownames=F, show_colnames=F, 
+         cluster_rows=T, clustering_distance_rows='manhattan',
+         cluster_cols=F, annotation_row=Pathway, annotation_col=Cluster, 
+         color=col.pal, annotation_colors=annot.pal, borker_color='gray', 
+         cellwidth=2, cellheight=2, gaps_col=match(2, Cluster$Cluster)-1, 
+         main='Flux through metabolic reactions', treeheight_row = 0)
+p2
+
+# Save plot (if prompted)
+if (save.plot) {
+  tiff('results/R_plots/popFBA_flux.tiff', units='in', 
+       width=7, height=3, res=300)
+  print({
+    p2
+  })
+  dev.off()
+}
+
+```
+
+
 
 ```{r entropy heatmap, warning = F}
 
@@ -293,58 +355,6 @@ Visualize all *E. coli* and *M. tb* results.
            cluster_rows=F, cluster_cols=F, annotation_row=Class, 
            color=col.pal, border_color='gray', 
            cellwidth=15, cellheight=2, main='Entropy feature heatmap')
-  p2
-  
-# Save plot (if prompted)
-  if (save.plot) {
-    tiff('results/R_plots/popFBA_flux.tiff', units='in', 
-         width=7, height=3, res=300)
-    print({
-      p2
-    })
-    dev.off()
-  }
-
-```
-
-```{r popFBA flux, warning = F}
-
-# Re-organize data
-  x <- dataset$popFBA$flux %>% select(rxn, subSystem, colnames(y))
-  # y <- x[-1, -c(1, 2)]
-  y <- x[-1, -c(1, 2)] %>% t(.) %>% scale(.) %>% t(.) %>% 
-    as.data.frame(., row.names=make.unique(x$rxn[-1])) %>% 
-    arrange()
-  # y[y > 2] <- 2; y[y < -2] <- -2
-  rownames(y) <- x$rxn[-1] %>% make.unique(.)
-  colnames(y) <- colnames(x)[-c(1, 2)]
-  
-# Define metadata
-  Pathway <- data.frame(Pathway=x$subSystem[-1], row.names=rownames(y))
-  Cluster <- data.frame(Cluster=as.character(x[1, -c(1, 2)]), 
-                        row.names=colnames(y))
-  
-# Use RedBlue color palette 
-  # col.neg <- colorRampPalette(colors=c('blue', 'white'), space='Lab')(50)
-  # col.pos <- colorRampPalette(colors=c('white', 'red4'), space='Lab')(50)
-  col.neg <- colorRampPalette(colors=c("royalblue3", "white"), 
-                              space="Lab")(abs(round(100*min(y))))
-  col.pos <- colorRampPalette(colors=c("white", "red4"), 
-                              space="Lab")(abs(round(100*max(y))))
-  col.pal <- c(col.neg, col.pos)
-  
-# Use custom annotation palette 
-  col <- rev(brewer.pal(dim(unique(Pathway))[1], 'Set3'))
-  names(col) <- unique(Pathway$Pathway)
-  annot.pal <- list(Pathway=col, Cluster=c('1'='goldenrod', '2'='darkgreen'))
-
-# Visualize plot
-  p2 <- pheatmap(y, scale='none', show_rownames=F, show_colnames=F, 
-           cluster_rows=T, clustering_distance_rows='manhattan',
-           cluster_cols=F, annotation_row=Pathway, annotation_col=Cluster, 
-           color=col.pal, annotation_colors=annot.pal, borker_color='gray', 
-           cellwidth=2, cellheight=2, gaps_col=match(2, Cluster$Cluster)-1, 
-           main='Flux through metabolic reactions', treeheight_row = 0)
   p2
   
 # Save plot (if prompted)
