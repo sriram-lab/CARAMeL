@@ -13,7 +13,7 @@ This is an R Markdown Notebook for generating figure components for the CARAMeL 
 
 Install required packages.
 
-```{r install_packages, results="hide", message=F, warning=F, error=F}
+```{r install_packages, results='hide', message=F, warning=F, error=F}
 
 # Define packages to install
 pkg.list = c('svDialogs', 'dplyr', 'readxl', 'RColorBrewer', 'pheatmap')
@@ -52,7 +52,7 @@ library(pheatmap)     # for generating heatmaps
 
 # Set user-defined inputs
 
-Define user-based inputs.
+Define user-defined inputs.
 
 ```{r user_inputs}
 
@@ -71,6 +71,7 @@ Load data to visualize. Specifically:
 
 - *E. coli* drug-media interactions (Biolog)
 - *E. coli* CARAMeL model predictions
+- *E. coli* cell-specific fluxes (populationFBA)
 
 ```{r load data}
 
@@ -85,8 +86,8 @@ dataset$EC$pred <- read_excel('results/plot_data.xlsx', sheet='pred2_heatmap')
 dataset$EC$pred3 <- read_excel('results/plot_data.xlsx', sheet='pred3_heatmap')
 dataset$EC$predp <- read_excel('results/plot_data.xlsx', sheet='popFBA_heatmap')
 
-# popFBA
-dataset$popFBA$flux <- read_excel('results/plot_data.xlsx', sheet='popFBA_flux')
+# popFBA (fluxes)
+dataset$EC$fluxp <- read_excel('results/plot_data.xlsx', sheet='popFBA_flux')
   
 ```
 
@@ -227,7 +228,7 @@ Heatmap of cell-specific predictions (popFBA).
 ```{r E. coli predictions (popFBA), warning = F}
 
 # Re-organize data
-x <- dataset$popFBA$flux %>% 
+x <- dataset$EC$fluxp %>% 
   relocate(colnames(.)[.[1, ]==2], .after=last_col())
 y <- dataset$EC$predp[, -1]
 rownames(y) <- dataset$EC$predp$Pair
@@ -279,7 +280,7 @@ Heatmap of cell-specific fluxes (popFBA).
 ```{r popFBA flux, warning = F}
 
 # Re-organize data
-x <- dataset$popFBA$flux %>% select(rxn, subSystem, colnames(y))
+x <- dataset$EC$fluxp %>% select(rxn, subSystem, colnames(y))
 # y <- x[-1, -c(1, 2)]
 y <- x[-1, -c(1, 2)] %>% t(.) %>% scale(.) %>% t(.) %>% 
   as.data.frame(., row.names=make.unique(x$rxn[-1])) %>% 
@@ -323,48 +324,5 @@ if (save.plot) {
   })
   dev.off()
 }
-
-```
-
-
-
-```{r entropy heatmap, warning = F}
-
-# Re-organize data
-  z <- dataset$entropy %>% arrange(Hsum)
-  x <- z %>% select(Interaction, Class) %>% .[1:171, ]
-  y <- z %>% select(Hsum, Hmean) %>% .[1:171, ]
-  rownames(y) <- x$Interaction %>% make.unique(.)
-  colnames(y) <- c('Sum', 'Mean')
-  
-# Define metadata
-  Class <- data.frame(Class=x$Class, row.names=rownames(y))
-  
-# Use RedBlue color palette 
-  col.neg <- colorRampPalette(colors=c('blue', 'white'), space='Lab')(50)
-  col.pos <- colorRampPalette(colors=c('white', 'red4'), space='Lab')(50)
-  col.pal <- c(col.neg, col.pos)
-  
-# # Use custom annotation palette 
-#   col <- rev(brewer.pal(dim(unique(Pathway))[1], 'Set3'))
-#   names(col) <- unique(Pathway$Pathway)
-#   annot.pal <- list(Pathway=col, Cluster=c('1'='goldenrod', '2'='darkgreen'))
-
-# Visualize plot
-  p2 <- pheatmap(y, scale='column', show_rownames=F, show_colnames=T, 
-           cluster_rows=F, cluster_cols=F, annotation_row=Class, 
-           color=col.pal, border_color='gray', 
-           cellwidth=15, cellheight=2, main='Entropy feature heatmap')
-  p2
-  
-# Save plot (if prompted)
-  if (save.plot) {
-    tiff('results/R_plots/popFBA_flux.tiff', units='in', 
-         width=7, height=3, res=300)
-    print({
-      p2
-    })
-    dev.off()
-  }
 
 ```
