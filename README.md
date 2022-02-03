@@ -1,6 +1,12 @@
 # CARAMeL
 Condition-specific Antibiotic Regimen Assessment using Mechanistic Learning
 
+# License
+Released via GPL GNU License  
+&copy; 2022 The Regents of the University of Michigan  
+Chandrasekaran Research Group - https://systemsbiologylab.org/  
+Contact: csriram@umich.edu  
+
 # Summary
 This GitHub repository contains all code files used in data analysis and model development for the CARAMeL publication (under review). 
 
@@ -71,8 +77,8 @@ The repository structure is outlined below. Of note, **folders** are designated 
   - *mtb_transcriptomics.xlsx*:           transcriptomic data for *M. tb* ([source](https://doi.org/10.1128/mBio.02627-19))
 - **results**: folder containing all results from CARAMeL model analyses
   - *CARAMeL_summary.xlsx*:               summary data from the *E. coli* CARAMeL model
-  - *CARAMeL_workspace.mat*:              MATLAB workspace file containing results of CARAMeL model development and analyses
   - *plot_data.xlsx*:                     Excel file containing data pertinent for figure generation
+  - *CARAMeL_workspace.mat*:              [REMOVED; CONTACT chechung@umich.edu FOR FILE] MATLAB workspace file containing results of CARAMeL model development and analyses
 - *CARAMeL_figures.mlx*:                  MATLAB livescript file that generates plots used in CARAMeL figures
 - *CARAMeL_flux.mlx*:                     MATLAB livescript file that generates GEM flus simulation data for *E. coli* and *M. tb* CARAMeL models
 - *CARAMeL_main.mlx*:                     MATLAB livescript file that conducts all main analyses for CARAMeL approach
