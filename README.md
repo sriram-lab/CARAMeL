@@ -1,6 +1,12 @@
 # CARAMeL
 Condition-specific Antibiotic Regimen Assessment using Mechanistic Learning
 
+# License
+Released via GPL GNU License  
+&copy; 2022 The Regents of the University of Michigan  
+Chandrasekaran Research Group - https://systemsbiologylab.org/  
+Contact: csriram@umich.edu  
+
 # Summary
 This GitHub repository contains all code files used in data analysis and model development for the CARAMeL publication (under review). 
 
