@@ -110,6 +110,7 @@ function flux_struct = derive_flux(model, gene_struct, varargin)
     addParameter(p, 'SaveData', false, isValidBoolean)
     addParameter(p, 'Filename', 'flux_data.xlsx', isValidName)
     addParameter(p, 'Verbose', false, @islogical)
+    addParameter(p, 'Nested', false, @islogical)
     
     % Parse through inputs
     p.KeepUnmatched = true; 
@@ -124,6 +125,7 @@ function flux_struct = derive_flux(model, gene_struct, varargin)
     saveData        = p.Results.SaveData; 
     filename        = p.Results.Filename; 
     verbose         = p.Results.Verbose;
+    nested          = p.Results.Nested; 
     
     % Define list of optional input parameters from external functions
     writetableParams = {'FileType','WriteVariableNames',...
@@ -233,7 +235,7 @@ function flux_struct = derive_flux(model, gene_struct, varargin)
     % Simulate flux activity based on DEGs
     count = 0;
     kappa = modelSpecs(1); rho = modelSpecs(2); epsilon = modelSpecs(3); 
-    if verbose
+    if verbose && ~nested
         progressbar('Deriving reaction fluxes...')
     end
     for j = 1:length(gene_struct.conditions) 
@@ -253,13 +255,10 @@ function flux_struct = derive_flux(model, gene_struct, varargin)
                 '. Inputting default flux and growth values.'])
             count = count + 1; 
         end
-        if verbose
+        if verbose && nested
+            progressbar([], j / length(gene_struct.conditions))
+        elseif verbose && ~nested
             progressbar(j / length(gene_struct.conditions))
-%             if reverse
-%                 progressbar([], j / length(gene_struct.conditions))
-%             else
-%                 progressbar([], [], j / length(gene_struct.conditions))
-%             end
         end
     end
     if verbose
