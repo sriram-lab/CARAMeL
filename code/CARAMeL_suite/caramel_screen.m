@@ -86,6 +86,7 @@ EXAMPLE USAGE:
     addParameter(p, 'Sequential', true, isValidBoolean)
     addParameter(p, 'Duration', [14 7], isValidDuration)
     addParameter(p, 'Verbose', true, isValidBoolean)
+    addParameter(p, 'Nested', false, @islogical)
     
     % Parse through inputs
     p.KeepUnmatched = true; 
@@ -109,6 +110,7 @@ EXAMPLE USAGE:
     seq     = logical(p.Results.Sequential); 
     t       = p.Results.Duration; 
     verbose = p.Results.Verbose; 
+    nested  = p.Results.Nested; 
     
     % Define list of optional input parameters from external functions
     caramelParams = {'Key', 'MLtype', 'MLmodel', 'Verbose', ...
@@ -187,7 +189,8 @@ EXAMPLE USAGE:
     end
     
     % Handle large requests
-    if numel(c) * nchoosek(numel(d), order) > 100000
+    nMax = 50000; 
+    if numel(c) * nchoosek(numel(d), order) > nMax
         partition = true; 
     else
         partition = false; 
@@ -218,24 +221,32 @@ EXAMPLE USAGE:
     end
     if partition
         Y = nan(size(combos, 1), 1); 
-        n = ceil(numel(Y) / 100000); 
+        n = ceil(numel(Y) / nMax); 
         fprintf('Large request. Partitioned job into %d sets. \n', n)
-        progressbar('Progress (simultaneous)...')
+        if verbose && ~nested
+            progressbar('Progress (simultaneous)...')
+        end
         for k = 1:n
             if k < n
-                [i1, i2] = deal((k - 1)*100000 + 1, k * 100000); 
+                [i1, i2] = deal((k - 1)*nMax + 1, k * nMax); 
                 x = struct('names', {X.names(i1:i2, :)}, ...
                     'scores', X.scores(i1:i2)); 
-                r = caramel(ps, x, 'predict', 'MLmodel', model, mainVarargin{:}); 
+                r = caramel(ps, x, 'predict', 'MLmodel', model, ...
+                    'ConserveMemory', true, mainVarargin{:}); 
                 Y(i1:i2) = r.predScores; 
             else
-                i1 = (k - 1)*100000 + 1; 
+                i1 = (k - 1)*nMax + 1; 
                 x = struct('names', {X.names(i1:end, :)}, ...
                     'scores', X.scores(i1:end)); 
-                r = caramel(ps, x, 'predict', 'MLmodel', model, mainVarargin{:}); 
+                r = caramel(ps, x, 'predict', 'MLmodel', model, ...
+                    'ConserveMemory', true, mainVarargin{:}); 
                 Y(i1:end) = r.predScores; 
             end
-            progressbar(k / n)
+            if verbose && nested
+                progressbar([], [], k / n)
+            elseif verbose && ~nested
+                progressbar(k / n)
+            end
         end
     else
         r = caramel(ps, X, 'predict', 'MLmodel', model, mainVarargin{:}); 
@@ -274,26 +285,32 @@ EXAMPLE USAGE:
             end
             if partition
                 y = nan(size(Xseq.scores)); 
-                progressbar(sprintf('Progress (sequential, %d/%d)...', ...
-                    i, size(p, 1)))
+                if verbose && ~nested
+                    progressbar(sprintf('Progress (sequential, %d/%d)...', ...
+                        i, size(p, 1)))
+                end
                 for k = 1:n
                     if k < n
-                        [i1, i2] = deal((k - 1)*100000 + 1, k * 100000); 
+                        [i1, i2] = deal((k - 1)*nMax + 1, k * nMax); 
                         x = struct('names', {Xseq.names(i1:i2, :)}, ...
                             'scores', Xseq.scores(i1:i2), ...
                             'time', {Xseq.time(i1:i2, :)}); 
                         r = caramel(ps, x, 'predict', 'MLmodel', model, ...
-                            mainVarargin{:}); 
+                            'ConserveMemory', true, mainVarargin{:}); 
                         y(i1:i2) = r.predScores; 
                     else
-                        i1 = (k - 1)*100000 + 1; 
+                        i1 = (k - 1)*nMax + 1; 
                         x = struct('names', {Xseq.names(i1:end, :)}, ...
                             'scores', Xseq.scores(i1:end)); 
                         r = caramel(ps, x, 'predict', 'MLmodel', model, ...
-                            mainVarargin{:}); 
+                            'ConserveMemory', true, mainVarargin{:}); 
                         y(i1:end) = r.predScores; 
                     end
-                    progressbar(k / n)
+                    if verbose && nested
+                        progressbar([], k / n)
+                    elseif verbose && ~nested
+                        progressbar(k / n)
+                    end
                 end
                 Y(:, i + 1) = y; 
             else

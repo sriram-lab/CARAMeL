@@ -88,6 +88,8 @@ dataset$EC$predp <- read_excel('results/plot_data.xlsx', sheet='popFBA_heatmap')
 
 # popFBA (fluxes)
 dataset$EC$fluxp <- read_excel('results/plot_data.xlsx', sheet='popFBA_flux')
+dataset$EC$popFBA$pred <- read_excel('results/plot_data.xlsx', sheet='popFBA_pred_heatmap')
+dataset$EC$popFBA$flux <- read_excel('results/plot_data.xlsx', sheet='popFBA_flux_heatmap')
   
 ```
 
@@ -319,6 +321,125 @@ p2
 if (save.plot) {
   tiff('results/R_plots/popFBA_flux.tiff', units='in', 
        width=7, height=3, res=300)
+  print({
+    p2
+  })
+  dev.off()
+}
+
+```
+
+Heatmap of cell-specific predictions (ALTERNATIVE). 
+
+```{r E. coli predictions (popFBA, ALT), warning = F}
+
+# Re-organize data
+x <- dataset$EC$popFBA$pred %>%
+  mutate(padj=p.adjust(pval, method='BH')) %>% filter(padj < 0.05)
+y <- x %>% select(-c(Pair, pval, padj))
+# x <- dataset$EC$popFBA$pred 
+# y <- x %>% select(-Pair)
+rownames(y) <- x$Pair
+ncell <- ncol(y)/2
+
+# Use RedBlue color palette (asymmetric)
+nScale <- 1000
+n <- round(nScale*(max(y) - min(y)))
+x <- n + round(nScale*min(y))
+col.neg <- colorRampPalette(colors=c('royalblue3', 'white'), 
+                            space='Lab')(abs(round(nScale*min(y))))
+col.pos <- colorRampPalette(colors=c('white', 'red4'), 
+                            space='Lab')(abs(round(nScale*max(y))))
+col.pal <- c(col.neg, col.pos)
+
+# Annotations
+Cluster <- data.frame(Cluster=as.character(rep(c(1, 2), each=ncell)), 
+                      row.names=colnames(y))
+annot.pal <- list(Cluster=c('1'='goldenrod', '2'='darkgreen'))
+
+# Visualize plot
+p2 <- pheatmap(y, cluster_rows=F, cluster_cols=F, gaps_col=c(ncell),
+         clustering_distance_rows='manhattan', color=col.pal, 
+         legend_breaks=c(min(y)+0.01, 0, max(y)-0.01), border_color=NA, 
+         annotation_col=Cluster, annotation_colors=annot.pal, 
+         legend_labels=c('Synergy','Neutral','Antagonism'), 
+         show_rownames=F, show_colnames=F, cellheight=2, cellwidth=2, 
+         main='Predicted interaction scores')
+p2
+
+# Save plot (if prompted)
+if (save.plot) {
+  tiff('results/R_plots/popFBA_pred_heatmap2.tiff', units='in', 
+       width=5, height=2, res=300)
+  print({
+    p2
+  })
+  dev.off()
+}
+
+```
+
+Heatmap of cell-specific fluxes (ALTERNATIVE). 
+
+```{r popFBA flux (ALT), warning = F}
+
+# Re-organize data
+x <- dataset$EC$popFBA$flux %>% mutate(padj=p.adjust(pval, method='BH')) %>%
+  arrange(padj) %>% filter(padj < 0.05) %>% arrange(subSystem)
+y <- x %>% select(-c(rxn, rxnName, subSystem, pval, padj)) %>%
+  t(.) %>% scale(.) %>% t(.) %>% as.data.frame()
+amino_acids <- c('Alanine', 'Arginine', 'Asparagine', 'Aspartate', 'Cysteine', 
+                 'Glutamine', 'Glutamate', 'Glycine', 'Histidine', 'Isoleucine', 
+                 'Leucine', 'Lysine', 'Methionine', 'Phenylalanine', 'Proline', 
+                 'Serine', 'Threonine', 'Tryptophan', 'Tyrosine', 'Valine')
+# x <- dataset$EC$popFBA$flux %>% 
+#   mutate(Pathway=if_else(grepl(paste0(amino_acids, collapse='|'), subSystem), 
+#                          'Amino Acid Metabolism', subSystem)) %>% 
+#   arrange(Pathway)
+# y <- x %>% select(-c(rxn, rxnName, subSystem, Pathway)) %>% 
+#   t(.) %>% scale(.) %>% t(.) %>% as.data.frame() 
+rownames(y) <- x$rxn %>% make.unique(.)
+ncell <- ncol(y)/2
+
+# Define metadata
+Pathway <- data.frame(Pathway=x$Pathway, row.names=rownames(y))
+Cluster <- data.frame(Cluster=as.character(rep(c(1, 2), each=ncell)), 
+                      row.names=colnames(y))
+# annot.row <- data.frame(Pathway=x$subSystem, p.adjusted=-log10(x$padj), 
+#                         row.names=rownames(y))
+# p <- data.frame(p=-log10(x$padj), row.names=rownames(y))
+
+# Use RedBlue color palette 
+col.neg <- colorRampPalette(colors=c('royalblue3', 'white'), 
+                            space='Lab')(abs(round(100*min(y))))
+col.pos <- colorRampPalette(colors=c('white', 'red4'), 
+                            space='Lab')(abs(round(100*max(y))))
+col.pal <- c(col.neg, col.pos)
+
+# Use custom annotation palette 
+qual.pal <- brewer.pal.info[brewer.pal.info$category=='qual',]
+col <- unlist(mapply(brewer.pal, qual.pal$maxcolors, rownames(qual.pal)))
+col <- col[1:dim(unique(Pathway))[1]]
+names(col) <- unique(Pathway$Pathway)
+# col.p <- colorRampPalette(colors=c('white', 'orchid2'), space='Lab')(dim(p)[1])
+# names(col.p) <- rownames(y)
+# annot.pal <- list(Pathway=col, Cluster=c('1'='goldenrod', '2'='darkgreen'), 
+#                   p.adjusted=col.p)
+annot.pal <- list(Pathway=col, Cluster=c('1'='goldenrod', '2'='darkgreen'))
+
+# Visualize plot
+p2 <- pheatmap(y, scale='none', show_rownames=F, show_colnames=F, 
+         cluster_rows=F, labels_row=x$Pathway, 
+         cluster_cols=F, annotation_row=Pathway, annotation_col=Cluster, 
+         color=col.pal, annotation_colors=annot.pal, border_color='gray', 
+         cellwidth=2, cellheight=2, gaps_col=match(2, Cluster$Cluster)-1, 
+         main='Flux through metabolic reactions', treeheight_row=0)
+p2
+
+# Save plot (if prompted)
+if (save.plot) {
+  tiff('results/R_plots/popFBA_flux_heatmap2.tiff', units='in', 
+       width=8, height=6, res=300)
   print({
     p2
   })

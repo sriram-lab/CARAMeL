@@ -175,6 +175,7 @@ EXAMPLE USAGE:
     addParameter(p, 'MLtype', 'regRF', isValidMLtype)
     addParameter(p, 'MLmodel', [], isValidMLmodel)
     addParameter(p, 'Verbose', false, isValidBoolean)
+    addParameter(p, 'ConserveMemory', false, isValidBoolean)
     addParameter(p, 'regRFtrainOptions', struct('importance', 1), @isstruct)
     addParameter(p, 'classRFtrainOptions', struct('importance', 1), @isstruct)
     addParameter(p, 'classRFpredictOptions', [], @isstruct)
@@ -199,6 +200,7 @@ EXAMPLE USAGE:
     MLtype              = p.Results.MLtype;
     MLmodel             = p.Results.MLmodel;
     verbose             = logical(p.Results.Verbose);
+    conserve            = logical(p.Results.ConserveMemory); 
     regRFtrainOpt       = p.Results.regRFtrainOptions;
     classRFtrainOpt     = p.Results.classRFtrainOptions;
     classRFpredictOpt   = p.Results.classRFpredictOptions;
@@ -403,14 +405,19 @@ EXAMPLE USAGE:
         ps.features), {'time','entropy-mean','entropy-sum'}'); 
     %   make sure labels are unique
     labels = matlab.lang.makeUniqueStrings(labels);
-    %   define joint profile variable
-    t1 = table(labels, 'VariableNames', {'Feature'}); 
-    joinLabels = join(is.names(ix, :), '_'); 
-    if numel(unique(joinLabels)) < numel(joinLabels)
-        joinLabels = matlab.lang.makeUniqueStrings(joinLabels);
+    %   define joint profile variable (if memory allows)
+    if ~conserve
+        t1 = table(labels, 'VariableNames', {'Feature'}); 
+        joinLabels = join(is.names(ix, :), '_'); 
+        if numel(unique(joinLabels)) < numel(joinLabels)
+            joinLabels = matlab.lang.makeUniqueStrings(joinLabels);
+        end
+        t2 = array2table(X, 'VariableNames', joinLabels); 
+        jointProfiles = horzcat(t1, t2); 
+    else
+        jointProfiles = []; 
+        warning('Not returning joint profile data to conserve memory.')
     end
-    t2 = array2table(X, 'VariableNames', joinLabels); 
-    jointProfiles = horzcat(t1, t2); 
     %   transpose input (for function compatibility)
     X = X';  
 
@@ -481,6 +488,9 @@ EXAMPLE USAGE:
                     predClass = predict(MLmodel, X, predictVarargin{:});
                     predScores = [];
             end
+    end
+    if conserve
+        clear X
     end
     
     % Define ML method used for results
