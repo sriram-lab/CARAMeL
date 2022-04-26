@@ -51,11 +51,11 @@ CARAMeL
 └──────misc: folder containing miscellaneous code files
 └─────────File_Exchange: code available through MATLAB File Exchange. Direct download links are provided for each method
 └────────────confusion matrix:            determines the confusion matrix and other relevant information for two or more classes</code><p><a href="https://www.mathworks.com/matlabcentral/fileexchange/60900-multi-class-confusion-matrixl">download</a></p><c>
-└────────────hline_vline:                 generates horizontal and vertical lines on MATLAB plots</c><pre><a href="https://www.mathworks.com/matlabcentral/fileexchange/1039-hline-and-vline">download</a></pre><code>
-└────────────multiple_boxplot:            generates multiple boxplots in a single MATLAB figure</code><pre><a href="https://www.mathworks.com/matlabcentral/fileexchange/47233-multiple_boxplot-m">download</a></pre><code>
-└────────────permn.m:                     determines all possible permutations with repetition</code><pre><a href="https://www.mathworks.com/matlabcentral/fileexchange/7147-permn">download</a></pre><code>
-└────────────progressbar:                 displays a progress bar to run a piece of code</code><pre><a href="https://www.mathworks.com/matlabcentral/fileexchange/6922-progressbar">download</a></pre><code>
-└────────────raacampbell-sigstar-5aabaeb: plots statistical significance stars onto MATLAB plots</code><pre><a href="https://www.mathworks.com/matlabcentral/fileexchange/39696-raacampbell-sigstar">download</a></pre><code>
+└────────────hline_vline:                 generates horizontal and vertical lines on MATLAB plots</c><p><a href="https://www.mathworks.com/matlabcentral/fileexchange/1039-hline-and-vline">download</a></p><code>
+└────────────multiple_boxplot:            generates multiple boxplots in a single MATLAB figure</code><p><a href="https://www.mathworks.com/matlabcentral/fileexchange/47233-multiple_boxplot-m">download</a></p><code>
+└────────────permn.m:                     determines all possible permutations with repetition</code><p><a href="https://www.mathworks.com/matlabcentral/fileexchange/7147-permn">download</a></p><code>
+└────────────progressbar:                 displays a progress bar to run a piece of code</code><p><a href="https://www.mathworks.com/matlabcentral/fileexchange/6922-progressbar">download</a></p><code>
+└────────────raacampbell-sigstar-5aabaeb: plots statistical significance stars onto MATLAB plots</code><p><a href="https://www.mathworks.com/matlabcentral/fileexchange/39696-raacampbell-sigstar">download</a></p><code>
 └─────────custom: custom code files created for specific purposes. Refer to function file for details on input/output/usage
 │   │   │   │   extract_from_confMatStats.m:    extracts information from a confusion matrix
 │   │   │   │   extract_metadata.m:             extracts metadata from an Excel file
