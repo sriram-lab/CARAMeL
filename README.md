@@ -50,7 +50,7 @@ CARAMeL
 │   │   │   process_flux.m:                 processes simulated flux data into phenotypic data to be used for CARAMeL model construction
 └──────misc: folder containing miscellaneous code files
 └─────────File_Exchange: code available through MATLAB File Exchange. Direct download links are provided for each method
-└────────────confusion matrix:            determines the confusion matrix and other relevant information for two or more classes</code><pre><a href="https://www.mathworks.com/matlabcentral/fileexchange/60900-multi-class-confusion-matrixl">download</a></pre><code>
+└────────────confusion matrix:            determines the confusion matrix and other relevant information for two or more classes</code><p><a href="https://www.mathworks.com/matlabcentral/fileexchange/60900-multi-class-confusion-matrixl">download</a></p><code>
 └────────────hline_vline:                 generates horizontal and vertical lines on MATLAB plots</code><pre><a href="https://www.mathworks.com/matlabcentral/fileexchange/1039-hline-and-vline">download</a></pre><code>
 └────────────multiple_boxplot:            generates multiple boxplots in a single MATLAB figure</code><pre><a href="https://www.mathworks.com/matlabcentral/fileexchange/47233-multiple_boxplot-m">download</a></pre><code>
 └────────────permn.m:                     determines all possible permutations with repetition</code><pre><a href="https://www.mathworks.com/matlabcentral/fileexchange/7147-permn">download</a></pre><code>
