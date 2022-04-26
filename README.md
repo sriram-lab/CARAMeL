@@ -16,7 +16,7 @@ Successful implementation of the code files within this repository require the f
 - [Gurobi](https://www.gurobi.com/): optimization solver; preferrably latest version
 - [COBRA Toolbox](https://github.com/opencobra/cobratoolbox): preferrably clone directly from GitHub
 
-# Installation and execution: 
+# Installation and execution 
 1. Install a local version of this repository using the following command in a terminal: 
 ```
 git clone https://github.com/sriram-lab/CARAMeL.git
