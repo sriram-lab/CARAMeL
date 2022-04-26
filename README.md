@@ -26,7 +26,7 @@ git clone https://github.com/sriram-lab/CARAMeL.git
 
 # Repository structure
 The repository structure is outlined below. Of note, **directories** are prefaced by `└───` while **code/data files** are preceded by `│   `. 
-```
+<pre><code>
 CARAMeL
 └───code: contains all relevant code files
 └──────CARAMeL_suite: contains all code files created to implement the CARAMeL approach. Note: all files contain details on inputs, outputs, and function usage
@@ -50,10 +50,11 @@ CARAMeL
 │   │   │   process_flux.m:                 processes simulated flux data into phenotypic data to be used for CARAMeL model construction
 └──────misc: folder containing miscellaneous code files
 └─────────File_Exchange: code available through MATLAB File Exchange. Direct download links are provided for each method
-└────────────confusion matrix:            determines the confusion matrix and other relevant information for two or more classes 
+└────────────confusion matrix:            determines the confusion matrix and other relevant information for two or more classes</code>
 <pre>
 <a href="https://www.mathworks.com/matlabcentral/fileexchange/60900-multi-class-confusion-matrixl">download</a>
 </pre>
+```
 ([download](https://www.mathworks.com/matlabcentral/fileexchange/60900-multi-class-confusion-matrix))
 └────────────hline_vline:                 generates horizontal and vertical lines on MATLAB plots ([download](https://www.mathworks.com/matlabcentral/fileexchange/1039-hline-and-vline))
 └────────────multiple_boxplot:            generates multiple boxplots in a single MATLAB figure ([download](https://www.mathworks.com/matlabcentral/fileexchange/47233-multiple_boxplot-m))
