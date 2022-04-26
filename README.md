@@ -25,7 +25,7 @@ git clone https://github.com/sriram-lab/CARAMeL.git
 3. You should now be able to run all MATLAB livescript files in the main repository folder.
 
 # Repository structure
-The repository structure is outlined below. Of note, **directories** are designated in bold while *code/data files* are designated in italics. 
+The repository structure is outlined below. Of note, **directories** are prefaced by `└───` while **code/data files** are preceded by `│   `. 
 ```
 CARAMeL
 └───**code**: contains all relevant code files
