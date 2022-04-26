@@ -29,7 +29,7 @@ The repository structure is outlined below. Of note, **directories** are preface
 <pre><code>
 CARAMeL
 └───code: contains all relevant code files
-└──────CARAMeL_suite: contains all code files created to implement the CARAMeL approach
+│   └───CARAMeL_suite: contains all code files created to implement the CARAMeL approach
 │   │   │   caramel.m:                      main script the constructs a CARAMeL model
 │   │   │   caramel_anova.m:                conducts a one-way ANOVA to determine GEM reactions with differential flux activity 
 │   │   │   caramel_assessPerf.m:           assesses the predictive performance of a CARAMeL model
@@ -43,29 +43,29 @@ CARAMeL
 │   │   │   caramel_rankSubsystems.m:       determines metabolic pathways enriched by GEM reactions tied to top CARAMeL features
 │   │   │   caramel_screen.m:               screens all possible drug combination outcomes given a list of drugs
 │   │   │   caramel_topFeatures.m:          extracts the top CARAMeL model features 
-└──────GEM_functions: contains all code files relevant to simulating metabolism using GEMs
+│   └───GEM_functions: contains all code files relevant to simulating metabolism using GEMs
 │   │   │   change_media.m:                 changes the simulated media condition for a given GEM
 │   │   │   constrain_flux_regulation.m:    simulates reaction fluxes based on omics data constraints
 │   │   │   derive_flux.m:                  derives flux simulations for a specified list of conditions
 │   │   │   process_flux.m:                 processes simulated flux data into a format compatible with CARAMeL model construction
-└──────misc: folder containing miscellaneous code files
-└─────────File_Exchange: code available through MATLAB File Exchange. Direct download links are provided for each method
-└────────────</code><a href="https://www.mathworks.com/matlabcentral/fileexchange/60900-multi-class-confusion-matrixl">confusion_matrix</a><code>:            determines the confusion matrix and other relevant information for two or more classes
-└────────────</code><a href="https://www.mathworks.com/matlabcentral/fileexchange/1039-hline-and-vline">hline_vline</a><code>:                 generates horizontal and vertical lines on MATLAB plots
-└────────────</code><a href="https://www.mathworks.com/matlabcentral/fileexchange/47233-multiple_boxplot-m">multiple_boxplot</a><code>:            generates multiple boxplots in a single MATLAB figure
-└────────────</code><a href="https://www.mathworks.com/matlabcentral/fileexchange/7147-permn">permn.m</a><code>:                     determines all possible permutations with repetition
-└────────────</code><a href="https://www.mathworks.com/matlabcentral/fileexchange/6922-progressbar">progressbar</a><code>:                 displays a progress bar to run a piece of code
-└────────────</code><a href="https://www.mathworks.com/matlabcentral/fileexchange/6922-progressbar">raacampbell-sigstar-5aabaeb</a><code>: plots statistical significance stars onto MATLAB plots
-└─────────custom: custom code files created for specific purposes. Refer to function file for details on input/output/usage
-│   │   │   │   extract_from_confMatStats.m:    extracts information from a confusion matrix
-│   │   │   │   extract_metadata.m:             extracts metadata from an Excel file
-│   │   │   │   gscatter2.m:                    generates a 2D group scatter plot
-│   │   │   │   meansgraph.m:                   customized modification to the built-in MATLAB function of the same name
-│   │   │   │   process_chemgen_v2.m:           processes chemogenomic data for E. coli (</code><a href="https://doi.org/10.15252/msb.20156777">source</a><code>)
-│   │   │   │   process_transcriptome_tb.m:     processes transcriptomic data for M. tb (</code><a href="https://doi.org/10.1128/mBio.02627-19">source</a><code>)
-│   │   │   │   sig_boxplot.m:                  generates a multple boxplot figure with significance annotations
+│   └───misc: folder containing miscellaneous code files
+│       └────File_Exchange: code available through MATLAB File Exchange. Direct download links are provided for each method
+│            └────</code><a href="https://www.mathworks.com/matlabcentral/fileexchange/60900-multi-class-confusion-matrixl">confusion_matrix</a><code>:            determines the confusion matrix for two or more classes
+│            └────</code><a href="https://www.mathworks.com/matlabcentral/fileexchange/1039-hline-and-vline">hline_vline</a><code>:                 generates horizontal and vertical lines on MATLAB plots
+│            └────</code><a href="https://www.mathworks.com/matlabcentral/fileexchange/47233-multiple_boxplot-m">multiple_boxplot</a><code>:            generates multiple boxplots in a single MATLAB figure
+│            └────</code><a href="https://www.mathworks.com/matlabcentral/fileexchange/7147-permn">permn.m</a><code>:                     determines all possible permutations with repetition
+│            └────</code><a href="https://www.mathworks.com/matlabcentral/fileexchange/6922-progressbar">progressbar</a><code>:                 displays a progress bar to run a piece of code
+│            └────</code><a href="https://www.mathworks.com/matlabcentral/fileexchange/6922-progressbar">raacampbell-sigstar-5aabaeb</a><code>: plots statistical significance stars onto MATLAB plots
+│            └────custom: custom code files created for specific purposes. Refer to function file for details on input/output/usage
+│                 │   extract_from_confMatStats.m:    extracts information from a confusion matrix
+│                 │   extract_metadata.m:             extracts metadata from an Excel file
+│                 │   gscatter2.m:                    generates a 2D group scatter plot
+│                 │   meansgraph.m:                   customized modification to the built-in MATLAB function of the same name
+│                 │   process_chemgen_v2.m:           processes chemogenomic data for E. coli (</code><a href="https://doi.org/10.15252/msb.20156777">source</a><code>)
+│                 │   process_transcriptome_tb.m:     processes transcriptomic data for M. tb (</code><a href="https://doi.org/10.1128/mBio.02627-19">source</a><code>)
+│                 │   sig_boxplot.m:                  generates a multple boxplot figure with significance annotations
 └───data: contains all data files used for CARAMeL model development and downstream analyses
-└──────supplementary: contains all supplementary data files
+│   └───supplementary: contains all supplementary data files
 │   │   │   ecoli_proteomics.xlsx:          proteomics data for E. coli
 │   │   │   ecoli_transcriptomics.xlsx:     transcriptomics data for E. coli
 │   │   biolog_PM01_conditions.xlsx:        list of all conditions in the Biolog phenotype microarray 1 (PM01) (</code><a href="https://www.biolog.com/products-portfolio-overview/phenotype-microarrays-for-microbial-cells/">source</a><code>)
