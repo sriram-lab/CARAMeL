@@ -26,6 +26,7 @@ git clone https://github.com/sriram-lab/CARAMeL.git
 
 # Repository structure
 The repository structure is outlined below. Of note, **folders** are designated in bold while *data/code files* are designated in italics. 
+```
 CARAMeL
 └───**code**: contains all relevant code files
 └──────**CARAMeL_suite**: contains all code files created to implement the CARAMeL approach. Note: all files contain details on inputs, outputs, and function usage
@@ -86,3 +87,4 @@ CARAMeL
 │   *README.md*:                  markdown file for CARAMeL readme documentation
 │   *data_visualization.Rmd*:     R markdown file generating additional plots used for CARAMeL figures
 │   *data_visualization.html*:    HTML file of the R markdown file
+```
