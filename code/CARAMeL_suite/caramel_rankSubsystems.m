@@ -51,9 +51,12 @@ EXAMPLE USAGE:
     % Define optional input validation functions
     g = {'Sy', 'Se', 'Sy/Se', 'Sy/R', 'A', 'R', 'A/R', 'A/Se', 'all'}; 
     isValidGroup = @(x) any(validatestring(x, g)); 
+    isValidBoolean = @(x) islogical(x) || ...
+        (isnumeric(x) && (x == 0 || x == 1));
     
     % Define optional input parameters
     addParameter(p, 'Group', 'all', isValidGroup)
+    addParameter(p, 'AdjustPval', true, isValidBoolean)
     
     % Parse through inputs
     parse(p, gem_table, gem, varargin{:})
@@ -62,6 +65,7 @@ EXAMPLE USAGE:
     t       = p.Results.gem_table; 
     gem     = p.Results.gem; 
     group   = p.Results.Group; 
+    padj    = p.Results.AdjustPval; 
     
 %% ASCERTAIN INPUT COMPATIBILITY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -91,6 +95,11 @@ EXAMPLE USAGE:
         N = sum(strcmp(gem.subSystems, subSystem{i})); 
         Ratio(i) = round(Count(i) / N, 2); 
         Pvalue(i) = 1 - hygecdf(Count(i), T, N, size(t, 1)); 
+    end
+
+    % Adjust p-values (if prompted)
+    if padj
+        Pvalue = mafdr(Pvalue); 
     end
     
     % Define output
