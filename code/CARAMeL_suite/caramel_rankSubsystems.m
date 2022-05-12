@@ -99,7 +99,7 @@ EXAMPLE USAGE:
 
     % Adjust p-values (if prompted)
     if padj
-        Pvalue = mafdr(Pvalue); 
+        Pvalue = mafdr(Pvalue, 'BHFDR', true); 
     end
     
     % Define output

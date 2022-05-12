@@ -1,4 +1,4 @@
-function [phenotypeData, jointProfiles] = ...
+function [phenotypeData, jointProfiles, interactionData] = ...
     caramel_featurize(phenotype_structure, interaction_structure, varargin)
 
 % DESCRIPTION: 
@@ -169,16 +169,33 @@ EXAMPLE USAGE:
     match_idx = ismember(combos, ps.conditions); 
     ix = sum(~cellfun(@isempty, is.names), 2) == sum(match_idx, 2);
     if sum(ix) < size(is.names, 1)
-        warning('Not able to %s for all interactions.', mode)
+        warning('Not able to use all interactions.')
     end
     interactionNames = combos(ix, :); 
-    
-    % Account for time (if provided)
+
+    % Filter other interaction data fields 
+    if isfield(is, 'scores')
+        interactionScores = is.scores(ix, :); 
+    else
+        interactionScores = []; 
+    end
+    if isfield(is, 'class')
+        interactionClass = is.class(ix, :); 
+    else
+        interactionClass = []; 
+    end
     if isfield(is, 'time')
         interactionTime = is.time(ix, :); 
     else
         interactionTime = []; 
     end
+
+    % Re-define interaction data
+    interactionData = struct(); 
+    interactionData.names = interactionNames; 
+    interactionData.scores = interactionScores; 
+    interactionData.class = interactionClass; 
+    interactionData.time = interactionTime; 
     
     % Extract phenotype information relevant to given interactions
     phenotypeConditions = unique(interactionNames(:), 'stable');
@@ -214,8 +231,6 @@ EXAMPLE USAGE:
             p_data = phenotypeArray(:, idx); 
             t_idx = find(~isnan(interactionTime(i, :))); 
             time = sum(interactionTime(i, t_idx(1:end-1))); 
-%             delta = diff(interactionTime(i, t_idx) .* p_data(:, t_idx), ...
-%                 numel(t_idx) - 1, 2);
             delta = diff(interactionTime(i, t_idx) .* p_data(:, t_idx), ...
                 numel(t_idx) - 1, 2) ./ sum(interactionTime(i, t_idx));
         end

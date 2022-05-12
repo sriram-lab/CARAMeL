@@ -1,0 +1,16 @@
+*********** CHANGELOG OPTGPSAMPLER VERSION 1.1 *********
+30/04/2014
+- fixed a bug that could cause samples to go out of the nullspace
+- added support for MATLAB mwblas and mwlapack for fast matrix multiplication and SVD
+- added SVD in C++ to get the nullspace
+- added interrupt handler to use control-c termination in Matlab
+- added custom reduceModel
+- added sampling summary
+- added verbose / non-verbose mode
+- added lazy loading of GLPK, GUROBI or CPLEX libraries to allow for easier LP solver plug-in
+- added support to use previously collected warmup points
+- added a warning for reactions that can not carry flux ("dead reactions")  
+- added possibility to only do a warm-up (0 sample points)
+- removed the dependency on ACML libraries (instead uses mwblas and mwlapack that ship with MATLAB)
+- added robustness test results for 11 publicly available (genome-scale) constraint-based metabolic models
+*********************************************************
