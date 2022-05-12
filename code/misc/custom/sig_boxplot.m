@@ -101,7 +101,7 @@ OUTPUTS:
         return
     end
     
-    % Check x and g
+    % Check x, g, and gorder
     if numel(x) ~= numel(g)
         error('Size of group variable does not match input data.');
     end
@@ -109,6 +109,10 @@ OUTPUTS:
     if numel(mkFC) == 1
         mkFC = repmat(mkFC, numel(g), 1); 
         mkFA = repmat(mkFA, numel(g), 1); 
+    end
+
+    if isnumeric(gorder)
+        gorder = cellstr(num2str(gorder)); 
     end
     
 %     % Define mkFC and mkFA (if not defined)
@@ -147,8 +151,8 @@ OUTPUTS:
     p_vals = nan(size(pair_groups, 1), 1);
     for i = 1:size(pair_groups, 1)
         try
-            vals1 = x(g == pair_groups{i,1});
-            vals2 = x(g == pair_groups{i,2});
+            vals1 = x(g == pair_groups(i, 1));
+            vals2 = x(g == pair_groups(i, 2));
         catch
             vals1 = x(strcmp(g, pair_groups{i,1}));
             vals2 = x(strcmp(g, pair_groups{i,2}));

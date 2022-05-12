@@ -10,9 +10,7 @@ function [data_struct, ML_model] = ...
 % STEPS: 
 % 1. Parse through inputs
 % 2. Ascertain input compatibility
-% 3. Filter and process data
-% 4. Define joint profiles (ML input)
-% 5. Train or predict for the given interaction dataset
+% 3. Train or predict for the given interaction dataset
 % 
 % Author:   Carolina H. Chung
 % Contact:  chechung@umich.edu
@@ -175,6 +173,7 @@ EXAMPLE USAGE:
     addParameter(p, 'MLtype', 'regRF', isValidMLtype)
     addParameter(p, 'MLmodel', [], isValidMLmodel)
     addParameter(p, 'Verbose', false, isValidBoolean)
+    addParameter(p, 'ConserveMemory', false, isValidBoolean)
     addParameter(p, 'regRFtrainOptions', struct('importance', 1), @isstruct)
     addParameter(p, 'classRFtrainOptions', struct('importance', 1), @isstruct)
     addParameter(p, 'classRFpredictOptions', [], @isstruct)
@@ -199,6 +198,7 @@ EXAMPLE USAGE:
     MLtype              = p.Results.MLtype;
     MLmodel             = p.Results.MLmodel;
     verbose             = logical(p.Results.Verbose);
+    conserve            = logical(p.Results.ConserveMemory); 
     regRFtrainOpt       = p.Results.regRFtrainOptions;
     classRFtrainOpt     = p.Results.classRFtrainOptions;
     classRFpredictOpt   = p.Results.classRFpredictOptions;
@@ -283,138 +283,17 @@ EXAMPLE USAGE:
                 "classify interactions based on their score."))
         end
     end
-    
-%% FILTER AND PROCESS DATA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    % Check interaction names against phenotype conditions
-    drug_conditions = unique(is.names); 
-    drug_conditions(cellfun(@isempty, drug_conditions)) = [];
-    if ~all(ismember(drug_conditions, ps.conditions))
-        if verbose
-            disp('Not all interaction names match phenotype data.')
-            fprintf('Attempting to match interaction and phenotype data...')
-        end
-        if isempty(key)
-            error('Provide key data to match interactions to phenotypes.')
-        elseif size(key, 2) ~= 2
-            error('Key data does not include all data needed.')
-        elseif ~any(ismember(drug_conditions, key(:)))
-            error('Interaction names do not match provided key.')
-        else
-            [query_list, match_list] = deal(key(:, 1), key(:, 2)); 
-        end
-        % 	match interaction names to phenotype conditions
-        [drugs, ~, idx] = intersect(drug_conditions, query_list, 'stable');
-        combos = is.names;
-        for i = 1:numel(drugs)
-            combos(strcmpi(drugs{i}, is.names)) = match_list(idx(i));
-        end
-        if verbose
-            fprintf('completed successfully. \n')
-        end
-    elseif all(ismember(drug_conditions, ps.conditions))
-        if verbose
-            disp('All interaction names accounted for in phenotype data.')
-        end
-        combos = is.names;
-    end
-    
-    % Filter out incomplete interaction entries
-    match_idx = ismember(combos, ps.conditions); 
-    ix = sum(~cellfun(@isempty, is.names), 2) == sum(match_idx, 2);
-    if sum(ix) < size(is.names, 1)
-        warning('Not able to %s for all interactions.', mode)
-    end
-    interactionNames = combos(ix, :); 
-    
-    % Define actual interaction outcome data
-    if ismember(MLtype, regML) 
-        interactionScores = is.scores(ix);
-        if isfield(is, 'class')
-            interactionClass = is.class(ix); 
-        elseif isfield(is, 'threshold')
-            interactionClass = ...
-                caramel_classify(interactionScores, is.threshold); 
-        else
-            interactionClass = [];
-        end
-    else
-        interactionClass = is.class(ix); 
-        if isfield(is, 'scores')
-            interactionScores = is.scores(ix); 
-        else
-            interactionScores = [];
-        end
-    end
-    
-    % Account for time (if provided)
-    if isfield(is, 'time')
-        interactionTime = is.time(ix, :); 
-    else
-        interactionTime = []; 
-    end
-    
-    % Extract phenotype information relevant to given interactions
-    phenotypeConditions = unique(interactionNames(:), 'stable');
-    %   account for empty cell
-    phenotypeConditions(cellfun(@isempty, phenotypeConditions)) = [];
-    [~, ~, idx] = intersect(phenotypeConditions, ps.conditions, 'stable'); 
-    phenotypeArray = ps.data(:, idx);
-    %   account for entropy 
-    H = ps.H(idx)'; 
-    %   define phenotype data variable
-    t1 = table(vertcat(ps.features, 'Entropy'), 'VariableNames', {'Label'}); 
-    col = unique(is.names(ix, :), 'stable'); 
-    col(cellfun(@isempty, col)) = []; 
-    t2 = array2table([phenotypeArray; H'], 'VariableNames', col'); 
-    phenotypeData = horzcat(t1, t2); 
-
-%% DEFINE JOINT PROFILES (ML INPUT) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    % ML input variable
-    X = nan(2*size(phenotypeArray, 1) + 3, size(interactionNames, 1));
-    %   for each interaction
-    for i = 1:size(interactionNames, 1)
-        % find conditions of interest
-        [~, ~, idx] = intersect(interactionNames(i, :), ...
-            phenotypeConditions, 'stable'); 
-        % define sigma features
-        sigma = sum(phenotypeArray(:, idx), 2) .* (2/numel(idx));
-        % define delta + time features
-        if isempty(interactionTime) || sum(interactionTime(i, :)) == 0 
-            delta = sum(phenotypeArray(:, idx), 2) == 1;
-            time = 0; 
-        else
-            p_data = phenotypeArray(:, idx); 
-            t_idx = find(~isnan(interactionTime(i, :))); 
-            time = sum(interactionTime(i, t_idx(1:end-1))); 
-%             delta = diff(interactionTime(i, t_idx) .* p_data(:, t_idx), ...
-%                 numel(t_idx) - 1, 2);
-            delta = diff(interactionTime(i, t_idx) .* p_data(:, t_idx), ...
-                numel(t_idx) - 1, 2) ./ sum(interactionTime(i, t_idx));
-        end
-        % define entropy features
-        X(1:end - 2, i) = [sigma; delta; time];
-        X(end - 1, i) = mean(H(idx)); 
-        X(end, i) = sum(H(idx)); 
-    end
-    %   define feature labels
-    labels = vertcat(strcat('sigma-', ps.features), strcat('delta-', ...
-        ps.features), {'time','entropy-mean','entropy-sum'}'); 
-    %   make sure labels are unique
-    labels = matlab.lang.makeUniqueStrings(labels);
-    %   define joint profile variable
-    t1 = table(labels, 'VariableNames', {'Feature'}); 
-    joinLabels = join(is.names(ix, :), '_'); 
-    if numel(unique(joinLabels)) < numel(joinLabels)
-        joinLabels = matlab.lang.makeUniqueStrings(joinLabels);
-    end
-    t2 = array2table(X, 'VariableNames', joinLabels); 
-    jointProfiles = horzcat(t1, t2); 
-    %   transpose input (for function compatibility)
-    X = X';  
 
 %% TRAIN OR PREDICT FOR THE GIVEN INTERACTION DATASET %%%%%%%%%%%%%%%%%%%%%
+
+    % Define feature information
+    [phenotypeData, jointProfiles, interactionData] = ...
+        caramel_featurize(ps, is, 'Key', key, 'Verbose', verbose);
+    X = table2array(jointProfiles(:, 2:end))'; 
+    labels = jointProfiles.Feature; 
+    interactionNames = interactionData.names; 
+    interactionScores = interactionData.scores; 
+    interactionClass = interactionData.class; 
 
     % Define additional inputs (if MLmode = regRF or classRF)
     if ismember(MLtype, {'regRF','classRF'}) && strcmpi(mode, 'train') 
@@ -482,6 +361,10 @@ EXAMPLE USAGE:
                     predScores = [];
             end
     end
+    if conserve
+        clear X
+        jointProfiles = [];
+    end
     
     % Define ML method used for results
     if ismember(MLtype, regML)
@@ -502,7 +385,7 @@ EXAMPLE USAGE:
     % Finalize ML portion based on function mode
     if strcmpi(mode, 'train')
         data_struct = struct(...
-            'interactionNames', {is.names(ix, :)}, ...
+            'interactionNames', {interactionNames}, ...
             'interactionScores', interactionScores, ...
             'interactionClass', {interactionClass}, ...
             'phenotypeData', phenotypeData, ...
@@ -514,7 +397,7 @@ EXAMPLE USAGE:
     elseif strcmpi(mode, 'predict')
         ML_model = MLmodel;
         data_struct = struct(...
-            'interactionNames', {is.names(ix, :)}, ...
+            'interactionNames', {interactionNames}, ...
             'interactionScores', interactionScores, ...
             'interactionClass', {interactionClass}, ...
             'phenotypeData', phenotypeData, ...

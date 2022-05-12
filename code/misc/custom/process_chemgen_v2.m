@@ -39,6 +39,7 @@ function [phenotype_data, phenotype_labels, conditions] = ...
         z = 2;
     end
     
+    
 %% LOAD DATA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     [phenotype_num, txt] = xlsread(fname);   % numerical data
     probelist = txt(2:end, 1);               % gene names (ECK numbers)

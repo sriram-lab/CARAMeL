@@ -172,10 +172,13 @@ function phenotype_struct = process_flux(flux_table, model, varargin)
         pos_flux(pos_idx, :) = []; 
         pos_labels(pos_idx) = [];
     end
+
+    % Metabolic flux entropy
+    H = log(var(flux)); 
     
 %% DEFINE OUTPUT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    phenotype_struct = struct('data', [neg_flux; pos_flux], ...
+    phenotype_struct = struct('data', [neg_flux; pos_flux], 'H', H, ...
         'features', {vertcat(neg_labels, pos_labels)}, ...
         'conditions', {flux_table.Properties.VariableNames(4:end)}); 
 

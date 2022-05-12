@@ -61,14 +61,22 @@ EXAMPLE USAGE:
     addRequired(p, 't_importance', isValidImp)
     addRequired(p, 'gem', isValidGEM)
     addRequired(p, 'data', isValidData)
+
+    % Define optional input validation functions
+    isValidBoolean = @(x) islogical(x) || ...
+        (isnumeric(x) && (x == 0 || x == 1));
+    
+    % Define optional input parameters
+    addParameter(p, 'AdjustPval', true, isValidBoolean)
     
     % Parse through inputs
-    parse(p, t_importance, gem, data)
+    parse(p, t_importance, gem, data, varargin{:})
     
     % Define inputs by name
     t       = p.Results.t_importance; 
     gem     = p.Results.gem; 
     data    = p.Results.data; 
+    padj    = p.Results.AdjustPval; 
 
 %% ASCERTAIN INPUT COMPATIBILITY %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -221,6 +229,11 @@ EXAMPLE USAGE:
     end
 %     Direction = regexprep(Direction, 'pos', '+'); 
 %     Direction = regexprep(Direction, 'neg', '-'); 
+
+    % Adjust p-values (if prompted)
+    if padj
+        Pvalue = mafdr(Pvalue, 'BHFDR', true); 
+    end
     
     % Define output
     if exist('rxnName', 'var') && exist('subSystem', 'var')

@@ -140,7 +140,7 @@ OUTPUTS:
     
     % Define required input validation function
     isValidGroup = @(x) iscategorical(x) || isnumeric(x) || iscell(x)||...
-        ischar(x) || islogical(x);
+        ischar(x) || isstring(x) || islogical(x);
     
     % Define required input variables
     addRequired(p, 'x', @isnumeric)
