@@ -239,7 +239,7 @@ function [fluxstate, grate, solverobj] = constrain_flux_regulation(...
 
     catch
         warning("Could not determine FBA solution. Returning NaN values.")
-        fluxstate = NaN .* ones(nrxns, 1);
+        fluxstate = nan(nrxns, 1);
         grate = NaN;
         solverobj = NaN;
     end
