@@ -1,3 +1,4 @@
+![alt text](https://github.com/sriram-lab/CARAMeL/blob/master/CARAMeL_logo.png?raw=true)
 # CARAMeL
 Condition-specific Antibiotic Regimen Assessment using Mechanistic Learning
 
