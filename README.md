@@ -88,6 +88,7 @@ CARAMeL
 │   │   CARAMeL_workspace.mat:              [REMOVED DUE TO SIZE LIMIT; ACCESS FILE </code><a href="https://www.dropbox.com/s/lmd3ejpms4095xw/CARAMeL_workspace.mat?dl=0">HERE</a><code>] MATLAB workspace file
 │   CARAMeL_figures.mlx:        MATLAB livescript file that generates plots used in CARAMeL figures
 │   CARAMeL_flux.mlx:           MATLAB livescript file that generates GEM flus simulation data for E. coli and M. tb CARAMeL models
+│   CARAMeL_logo.png:           PNG file of the CARAMeL logo
 │   CARAMeL_main.mlx:           MATLAB livescript file that conducts all main analyses for CARAMeL approach
 │   CARAMeL_validations.mlx:    MATLAB livescript file that executes validations discussed in CARAMeL supplementary materials
 │   CARAMeL_visualization.Rmd:  R markdown file generating additional plots used for CARAMeL figures
