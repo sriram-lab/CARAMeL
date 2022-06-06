@@ -92,5 +92,6 @@ CARAMeL
 │   CARAMeL_main.mlx:           MATLAB livescript file that conducts all main analyses for CARAMeL approach
 │   CARAMeL_validations.mlx:    MATLAB livescript file that executes validations discussed in CARAMeL supplementary materials
 │   CARAMeL_visualization.Rmd:  R markdown file generating additional plots used for CARAMeL figures
-│   README.md:                  README markdown file
+│   LICENSE:                    LICENSE file
+│   README.md:                  README file
 │   populationFBA.mlx:          MATLAB livescript file that executes code relating to cell-specific predictions
