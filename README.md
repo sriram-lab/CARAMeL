@@ -3,8 +3,8 @@
 # CARAMeL
 Condition-specific Antibiotic Regimen Assessment using Mechanistic Learning
 
-![license badge](https://img.shields.io/badge/License-GNU%20GPL-blue)
-![DOI badge](https://badgen.net/badge/DOI/10.1101%2F2021.08.03.454957/blue)
+[![license badge](https://img.shields.io/badge/License-GNU%20GPL-blue)](https://github.com/sriram-lab/CARAMeL/blob/master/LICENSE)
+[![DOI badge](https://badgen.net/badge/DOI/10.1101%2F2021.08.03.454957/blue)](https://www.biorxiv.org/content/10.1101/2021.08.03.454957v3)
 
 # License
 Released via GPL GNU License  
