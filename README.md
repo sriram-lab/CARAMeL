@@ -1,6 +1,10 @@
 ![alt text](https://github.com/sriram-lab/CARAMeL/blob/master/CARAMeL_logo.png?raw=true)
+
 # CARAMeL
 Condition-specific Antibiotic Regimen Assessment using Mechanistic Learning
+
+[![license badge](https://img.shields.io/badge/License-GNU%20GPL-blue)](https://github.com/sriram-lab/CARAMeL/blob/master/LICENSE)
+[![DOI badge](https://badgen.net/badge/DOI/10.1101%2F2021.08.03.454957/blue)](https://www.biorxiv.org/content/10.1101/2021.08.03.454957v3)
 
 # License
 Released via GPL GNU License  
@@ -92,5 +96,6 @@ CARAMeL
 │   CARAMeL_main.mlx:           MATLAB livescript file that conducts all main analyses for CARAMeL approach
 │   CARAMeL_validations.mlx:    MATLAB livescript file that executes validations discussed in CARAMeL supplementary materials
 │   CARAMeL_visualization.Rmd:  R markdown file generating additional plots used for CARAMeL figures
-│   README.md:                  README markdown file
+│   LICENSE:                    LICENSE file
+│   README.md:                  README file
 │   populationFBA.mlx:          MATLAB livescript file that executes code relating to cell-specific predictions
