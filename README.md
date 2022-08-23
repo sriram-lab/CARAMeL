@@ -13,7 +13,8 @@ Chandrasekaran Research Group - https://systemsbiologylab.org/
 Contact: csriram@umich.edu  
 
 # Summary
-This GitHub repository contains all code files used in data analysis and model development for the CARAMeL publication (under review). 
+This GitHub repository contains all code files used in data analysis and model development for the CARAMeL publication. 
+Citation: Chung, C. H., & Chandrasekaran, S. (2022). A flux-based machine learning model to simulate the impact of pathogen metabolic heterogeneity on drug interactions. *PNAS Nexus, 1*(3), 1–14. https://doi.org/10.1093/pnasnexus/pgac132). 
 
 # Dependencies
 Successful implementation of the code files within this repository require the following external installations: 
