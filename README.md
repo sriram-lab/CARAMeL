@@ -4,7 +4,7 @@
 Condition-specific Antibiotic Regimen Assessment using Mechanistic Learning
 
 [![license badge](https://img.shields.io/badge/License-GNU%20GPL-blue)](https://github.com/sriram-lab/CARAMeL/blob/master/LICENSE)
-[![DOI badge](https://badgen.net/badge/DOI/10.1101%2F2021.08.03.454957/blue)](https://doi.org/10.1093/pnasnexus/pgac132)
+[![DOI badge](https://badgen.net/badge/DOI/10.1093/pnasnexus/pgac132/blue)](https://doi.org/10.1093/pnasnexus/pgac132)
 
 # License
 Released via GPL GNU License  
