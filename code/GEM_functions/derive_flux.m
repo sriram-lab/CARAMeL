@@ -95,7 +95,7 @@ function flux_struct = derive_flux(model, gene_struct, varargin)
     isValidGeneStruct = @(x) isstruct(x) && ...
         all(ismember({'genes','conditions','fold_data'}, fieldnames(x))); 
     isValidModelSpecs = @(x) isnumeric(x) && (numel(x) == 3); 
-    isValidThreshold = @(x) isnumeric(x) && (numel(x) == 2); 
+    isValidThreshold = @(x) isnumeric(x); 
     isValidBoolean = @(x) islogical(x) || ismember(x, [0 1]); 
     isValidName = @(x) isstring(x) || ischar(x); 
     
@@ -182,6 +182,16 @@ function flux_struct = derive_flux(model, gene_struct, varargin)
         error(strcat("Genes in 'gene_struct' do not match either ", ...
             "model genes or geneNames."))
     end
+
+    % Check threshold variable
+    if numel(threshold) == 2
+        threshold = repmat(threshold, numel(gene_struct.conditions), 1); 
+    else
+        if size(threshold, 1) ~= numel(gene_struct.conditions) || ...
+                size(threshold, 2) ~= 2
+            error('Threshold provided as matrix, but size incompatible.')
+        end
+    end
     
     % Start function timer
     if verbose
@@ -199,14 +209,14 @@ function flux_struct = derive_flux(model, gene_struct, varargin)
 %         threshold = quantile(gene_struct.fold_data(:, j), [0.2 0.8]); 
         if reverse
             up_idx = (gene_struct.sig_data(:, j) < 0.05) & ...
-                (gene_struct.fold_data(:, j) < threshold(1));
+                (gene_struct.fold_data(:, j) < threshold(j, 1));
             down_idx = (gene_struct.sig_data(:, j) < 0.05) & ...
-                (gene_struct.fold_data(:, j) > threshold(2));
+                (gene_struct.fold_data(:, j) > threshold(j, 2));
         else
             down_idx = (gene_struct.sig_data(:, j) < 0.05) & ...
-                (gene_struct.fold_data(:, j) < threshold(1));
+                (gene_struct.fold_data(:, j) < threshold(j, 1));
             up_idx = (gene_struct.sig_data(:, j) < 0.05) & ...
-                (gene_struct.fold_data(:, j) > threshold(2));
+                (gene_struct.fold_data(:, j) > threshold(j, 2));
         end
         if any(ismember(gene_struct.genes, model.geneNames))
             [~, ~, down_mod_idx] = ...
