@@ -192,7 +192,7 @@ EXAMPLE USAGE:
         if dispResults
             disp(results_struct)
         end
-        return
+        % return
     end
 
     % Determine confusion matrix

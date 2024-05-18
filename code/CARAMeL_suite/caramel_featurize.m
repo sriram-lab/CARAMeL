@@ -182,7 +182,11 @@ EXAMPLE USAGE:
     if isfield(is, 'class')
         interactionClass = is.class(ix, :); 
     else
-        interactionClass = []; 
+        try 
+            interactionClass = caramel_classify(interactionScores, is.threshold); 
+        catch
+            interactionClass = []; 
+        end
     end
     if isfield(is, 'time')
         interactionTime = is.time(ix, :); 

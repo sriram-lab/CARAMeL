@@ -264,13 +264,23 @@ EXAMPLE USAGE:
         % Save outputs of interest
         ix = find(idx(applylo)); 
         predScores(ix) = results.predScores; 
-        predClass(ix) = results.predClass; 
+        try
+            predClass(ix) = results.predClass; 
+        catch
+            predClass(ix) = caramel_classify(results.predScores, is.threshold); 
+        end
         N(i) = size(results.interactionNames, 1); 
         R(i) = results.corrStat; 
         p(i) = results.corrPvalue; 
-        Accuracy(i) = results.accuracy; 
-        synAUC(i) = results.synergyAUC; 
-        antAUC(i) = results.antagonismAUC; 
+        try
+            Accuracy(i) = results.accuracy; 
+            synAUC(i) = results.synergyAUC; 
+            antAUC(i) = results.antagonismAUC; 
+        catch
+            Accuracy(i) = NaN; 
+            synAUC(i) = NaN; 
+            antAUC(i) = NaN; 
+        end
         % Update progress bar
         progressbar(i/n)
     end
