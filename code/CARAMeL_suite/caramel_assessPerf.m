@@ -186,12 +186,12 @@ EXAMPLE USAGE:
             'corrStat', corrStat, ...
             'corrPvalue', corrPvalue);
         end
-        if showPlots
-            caramel_plot(results_struct, 'scatter'); 
-        end
-        if dispResults
-            disp(results_struct)
-        end
+%         if showPlots
+%             caramel_plot(results_struct, 'scatter'); 
+%         end
+%         if dispResults
+%             disp(results_struct)
+%         end
         % return
     end
 
