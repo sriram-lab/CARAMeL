@@ -1,4 +1,4 @@
-function [fluxstate, grate, solverobj] = constrain_flux_regulation(...
+function [fluxstate, grate, solverobj, solg1, model] = constrain_flux_regulation(...
     model1, onreactions, offreactions, ...
     kappa, rho, epsilon, mode, epsilon2, minfluxflag)
 
@@ -118,7 +118,14 @@ function [fluxstate, grate, solverobj] = constrain_flux_regulation(...
     end
 
     % Don't display output after running FBA
-    params.outputflag = 0;
+    params = struct(); 
+    params.OutputFlag = 0;
+%     params.IterationLimit = 1e8; 
+%     params.FeasibilityTol = 1e-6; 
+%     params.IntFeasTol = 1e-5; 
+%     params.OptimalityTol = 1e-6; 
+%     params.Presolve = -1; 
+%     params.Method = -1; 
 
     % Apply PFBA (if prompted)
     if minfluxflag
@@ -245,4 +252,3 @@ function [fluxstate, grate, solverobj] = constrain_flux_regulation(...
     end
 
 end
-
