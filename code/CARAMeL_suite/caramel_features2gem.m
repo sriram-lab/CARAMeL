@@ -89,8 +89,8 @@ EXAMPLE USAGE:
     
     % Check that interaction number matches number of joint profiles
     features = data.jointProfiles.Feature; 
-    p = table2array(data.jointProfiles(:, 2:end)); 
-    if size(p, 2) ~= numel(data.interactionScores)
+    profiles = table2array(data.jointProfiles(:, 2:end)); 
+    if size(profiles, 2) ~= numel(data.interactionScores)
         error('Interaction number and joint profile number do not match.')
     end
     if ~any(ismember(features, sd_features))
@@ -98,8 +98,8 @@ EXAMPLE USAGE:
     end
     
     % Check if any interactions are sequential
-    if any(p(strcmpi(features, 'time'), :) > 0)
-        ix = p(strcmpi(features, 'time'), :) > 0; 
+    if any(profiles(strcmpi(features, 'time'), :) > 0)
+        ix = profiles(strcmpi(features, 'time'), :) > 0; 
         scores = struct(); 
         scores.sim = data.interactionScores(~ix); 
         scores.seq = data.interactionScores(ix); 
@@ -135,7 +135,7 @@ EXAMPLE USAGE:
             psim = 1; 
         end
         for j = 1:numel(ix1)
-            ix2 = logical(p(ix1(j), :)); 
+            ix2 = logical(profiles(ix1(j), :)); 
             % accout for both
             if isstruct(scores) 
                 [ix3, ix4] = deal(ix2(~ix), ix2(ix)); 
@@ -210,7 +210,7 @@ EXAMPLE USAGE:
                 Interaction(i) = {'NS'}; 
             end
         end
-%         idx = logical(p(endsWith(features, rxn{i}), :));
+%         idx = logical(profiles(endsWith(features, rxn{i}), :));
 %         if size(idx, 1) > 1
 %             idx = logical(sum(idx)); 
 %         end
