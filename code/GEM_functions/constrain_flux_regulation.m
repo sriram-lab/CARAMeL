@@ -38,12 +38,12 @@ function [fluxstate, grate, solverobj, solg1, model] = constrain_flux_regulation
            -> dim:          m x 1 (m = # of "off" reactions/down-reg genes)
     
     OPTIONAL INPUTS:
-        1. kappa:       relative weight for "on" reactions/up-reg genes
-           -> default:  kappa = 1
+        1. rho:         relative weight for "on" reactions/up-reg genes
+           -> default:  rho = 1
            -> note:     use small value (e.g. 1e-3) for large networks
     
-        2. rho:         relative weight for "off" reactions/down-reg genes
-           -> default:  rho = 1
+        2. kappa:       relative weight for "off" reactions/down-reg genes
+           -> default:  kappa = 1
            -> note:     use small value (e.g. 1e-3) for large networks
     
         3. epsilon:     minimum flux for "on" reactions
